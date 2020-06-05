@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>src.utils.prints API documentation</title>
+<title>howiml.utils.prints API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,19 +17,16 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>src.utils.prints</code></h1>
+<h1 class="title">Module <code>howiml.utils.prints</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from prettytable import PrettyTable
-
-import numpy as np
-import utilities
-
-np.random.seed(100)
+<pre><code class="python">import numpy as np
+from prettytable import PrettyTable
+from howiml.utils import utilities
 
 def printCorrelationMatrix(covMat, df, columnNames=None):
     if &#39;Date&#39; in df.columns:
@@ -101,7 +98,7 @@ def printTrainingSummary(trainingSummary):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="src.utils.prints.prettyPrint"><code class="name flex">
+<dt id="howiml.utils.prints.prettyPrint"><code class="name flex">
 <span>def <span class="ident">prettyPrint</span></span>(<span>data, precision, suppress)</span>
 </code></dt>
 <dd>
@@ -114,7 +111,7 @@ def printTrainingSummary(trainingSummary):
     print(np.array_str(data, precision=precision, suppress_small=suppress))</code></pre>
 </details>
 </dd>
-<dt id="src.utils.prints.printColumns"><code class="name flex">
+<dt id="howiml.utils.prints.printColumns"><code class="name flex">
 <span>def <span class="ident">printColumns</span></span>(<span>df, columnDescriptions)</span>
 </code></dt>
 <dd>
@@ -131,7 +128,7 @@ def printTrainingSummary(trainingSummary):
             print(&#34;Col.&#34;, i, &#34;:&#34;, column)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.prints.printCorrelationMatrix"><code class="name flex">
+<dt id="howiml.utils.prints.printCorrelationMatrix"><code class="name flex">
 <span>def <span class="ident">printCorrelationMatrix</span></span>(<span>covMat, df, columnNames=None)</span>
 </code></dt>
 <dd>
@@ -152,7 +149,7 @@ def printTrainingSummary(trainingSummary):
     prettyPrint(covMat, 2, True)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.prints.printDataframe"><code class="name flex">
+<dt id="howiml.utils.prints.printDataframe"><code class="name flex">
 <span>def <span class="ident">printDataframe</span></span>(<span>df)</span>
 </code></dt>
 <dd>
@@ -165,7 +162,7 @@ def printTrainingSummary(trainingSummary):
     print(df)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.prints.printDataframeByTimeframe"><code class="name flex">
+<dt id="howiml.utils.prints.printDataframeByTimeframe"><code class="name flex">
 <span>def <span class="ident">printDataframeByTimeframe</span></span>(<span>df, start, end)</span>
 </code></dt>
 <dd>
@@ -179,7 +176,7 @@ def printTrainingSummary(trainingSummary):
     printDataframe(df)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.prints.printEmptyLine"><code class="name flex">
+<dt id="howiml.utils.prints.printEmptyLine"><code class="name flex">
 <span>def <span class="ident">printEmptyLine</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -192,7 +189,7 @@ def printTrainingSummary(trainingSummary):
     print(&#34;&#34;)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.prints.printExplainedVarianceRatio"><code class="name flex">
+<dt id="howiml.utils.prints.printExplainedVarianceRatio"><code class="name flex">
 <span>def <span class="ident">printExplainedVarianceRatio</span></span>(<span>pca)</span>
 </code></dt>
 <dd>
@@ -206,7 +203,7 @@ def printTrainingSummary(trainingSummary):
     prettyPrint(pca.explained_variance_ratio_, 2, True)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.prints.printHorizontalLine"><code class="name flex">
+<dt id="howiml.utils.prints.printHorizontalLine"><code class="name flex">
 <span>def <span class="ident">printHorizontalLine</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -219,7 +216,7 @@ def printTrainingSummary(trainingSummary):
     print(&#34;-------------------------------------------&#34;)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.prints.printModelScores"><code class="name flex">
+<dt id="howiml.utils.prints.printModelScores"><code class="name flex">
 <span>def <span class="ident">printModelScores</span></span>(<span>names, r2_train, r2_test)</span>
 </code></dt>
 <dd>
@@ -236,7 +233,7 @@ def printTrainingSummary(trainingSummary):
     print(t)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.prints.printReconstructionRow"><code class="name flex">
+<dt id="howiml.utils.prints.printReconstructionRow"><code class="name flex">
 <span>def <span class="ident">printReconstructionRow</span></span>(<span>pca, x, standardScaler, index=0)</span>
 </code></dt>
 <dd>
@@ -257,7 +254,7 @@ def printTrainingSummary(trainingSummary):
     prettyPrint(inv_standardized[index,:], precision=2, suppress_small=True)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.prints.printTrainingSummary"><code class="name flex">
+<dt id="howiml.utils.prints.printTrainingSummary"><code class="name flex">
 <span>def <span class="ident">printTrainingSummary</span></span>(<span>trainingSummary)</span>
 </code></dt>
 <dd>
@@ -286,22 +283,22 @@ def printTrainingSummary(trainingSummary):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="src.utils" href="index.html">src.utils</a></code></li>
+<li><code><a title="howiml.utils" href="index.html">howiml.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="src.utils.prints.prettyPrint" href="#src.utils.prints.prettyPrint">prettyPrint</a></code></li>
-<li><code><a title="src.utils.prints.printColumns" href="#src.utils.prints.printColumns">printColumns</a></code></li>
-<li><code><a title="src.utils.prints.printCorrelationMatrix" href="#src.utils.prints.printCorrelationMatrix">printCorrelationMatrix</a></code></li>
-<li><code><a title="src.utils.prints.printDataframe" href="#src.utils.prints.printDataframe">printDataframe</a></code></li>
-<li><code><a title="src.utils.prints.printDataframeByTimeframe" href="#src.utils.prints.printDataframeByTimeframe">printDataframeByTimeframe</a></code></li>
-<li><code><a title="src.utils.prints.printEmptyLine" href="#src.utils.prints.printEmptyLine">printEmptyLine</a></code></li>
-<li><code><a title="src.utils.prints.printExplainedVarianceRatio" href="#src.utils.prints.printExplainedVarianceRatio">printExplainedVarianceRatio</a></code></li>
-<li><code><a title="src.utils.prints.printHorizontalLine" href="#src.utils.prints.printHorizontalLine">printHorizontalLine</a></code></li>
-<li><code><a title="src.utils.prints.printModelScores" href="#src.utils.prints.printModelScores">printModelScores</a></code></li>
-<li><code><a title="src.utils.prints.printReconstructionRow" href="#src.utils.prints.printReconstructionRow">printReconstructionRow</a></code></li>
-<li><code><a title="src.utils.prints.printTrainingSummary" href="#src.utils.prints.printTrainingSummary">printTrainingSummary</a></code></li>
+<li><code><a title="howiml.utils.prints.prettyPrint" href="#howiml.utils.prints.prettyPrint">prettyPrint</a></code></li>
+<li><code><a title="howiml.utils.prints.printColumns" href="#howiml.utils.prints.printColumns">printColumns</a></code></li>
+<li><code><a title="howiml.utils.prints.printCorrelationMatrix" href="#howiml.utils.prints.printCorrelationMatrix">printCorrelationMatrix</a></code></li>
+<li><code><a title="howiml.utils.prints.printDataframe" href="#howiml.utils.prints.printDataframe">printDataframe</a></code></li>
+<li><code><a title="howiml.utils.prints.printDataframeByTimeframe" href="#howiml.utils.prints.printDataframeByTimeframe">printDataframeByTimeframe</a></code></li>
+<li><code><a title="howiml.utils.prints.printEmptyLine" href="#howiml.utils.prints.printEmptyLine">printEmptyLine</a></code></li>
+<li><code><a title="howiml.utils.prints.printExplainedVarianceRatio" href="#howiml.utils.prints.printExplainedVarianceRatio">printExplainedVarianceRatio</a></code></li>
+<li><code><a title="howiml.utils.prints.printHorizontalLine" href="#howiml.utils.prints.printHorizontalLine">printHorizontalLine</a></code></li>
+<li><code><a title="howiml.utils.prints.printModelScores" href="#howiml.utils.prints.printModelScores">printModelScores</a></code></li>
+<li><code><a title="howiml.utils.prints.printReconstructionRow" href="#howiml.utils.prints.printReconstructionRow">printReconstructionRow</a></code></li>
+<li><code><a title="howiml.utils.prints.printTrainingSummary" href="#howiml.utils.prints.printTrainingSummary">printTrainingSummary</a></code></li>
 </ul>
 </li>
 </ul>

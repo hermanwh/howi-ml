@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>src.utils.modelFuncs API documentation</title>
+<title>howiml.utils.modelFuncs API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,7 +17,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>src.utils.modelFuncs</code></h1>
+<h1 class="title">Module <code>howiml.utils.modelFuncs</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -25,12 +25,9 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import sys, os
-ROOT_PATH = os.path.abspath(&#34;.&#34;).split(&#34;src&#34;)[0]
+ROOT_PATH = os.path.abspath(&#34;.&#34;)
 if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
-module_path = os.path.abspath(os.path.join(ROOT_PATH+&#34;/src/utils/&#34;))
-if module_path not in sys.path:
-    sys.path.append(module_path)
 
 import pathlib
 #print(pathlib.Path(__file__).parent.absolute())
@@ -52,16 +49,12 @@ from keras.models import load_model
 from keras.callbacks.callbacks import EarlyStopping, ReduceLROnPlateau
 from keras.utils import plot_model
 
-import plots
-import prints
+from howiml.utils import plots
+from howiml.utils import prints
 import pickle
 import numpy as np
-
 import math
 import random
-
-random.seed(100)
-np.random.seed(100)
 
 def printModelSummary(model):
     # Prints the model summary of a machine learning model
@@ -190,10 +183,10 @@ def loadModel(modelname, filename, targetColumns, ensembleName=None):
     modName = &#34;_&#34;.join(modelname.split(&#39; &#39;))
     
     if ensembleName is None:
-        directory = ROOT_PATH + &#39;/src/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39; + modName + &#39;_&#39; + joinedColumns
+        directory = ROOT_PATH + &#39;/howiml/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39; + modName + &#39;_&#39; + joinedColumns
     else:    
         ensName = &#34;_&#34;.join(ensembleName.split(&#39; &#39;))
-        directory = ROOT_PATH + &#39;/src/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39; + ensName + &#39;_&#39; + joinedColumns + &#39;/&#39; + modName
+        directory = ROOT_PATH + &#39;/howiml/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39; + ensName + &#39;_&#39; + joinedColumns + &#39;/&#39; + modName
     
     if os.path.isfile((directory + &#34;.h5&#34;)) and os.path.isfile((directory + &#34;.h5&#34;)):
         model = load_model(directory + &#34;.h5&#34;)
@@ -212,7 +205,7 @@ def saveModels(modelList, filename, targetColumns):
     
     for model in modelList:
         modName = &#34;_&#34;.join(model.name.split(&#39; &#39;))
-        directory = ROOT_PATH + &#39;/src/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39;
+        directory = ROOT_PATH + &#39;/howiml/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39;
         if not os.path.exists(directory):
             os.makedirs(directory)
         modelPath = directory
@@ -313,7 +306,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="src.utils.modelFuncs.getBasicCallbacks"><code class="name flex">
+<dt id="howiml.utils.modelFuncs.getBasicCallbacks"><code class="name flex">
 <span>def <span class="ident">getBasicCallbacks</span></span>(<span>monitor='val_loss', patience_es=200, patience_rlr=80)</span>
 </code></dt>
 <dd>
@@ -337,7 +330,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
     ]</code></pre>
 </details>
 </dd>
-<dt id="src.utils.modelFuncs.getBasicHyperparams"><code class="name flex">
+<dt id="howiml.utils.modelFuncs.getBasicHyperparams"><code class="name flex">
 <span>def <span class="ident">getBasicHyperparams</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -357,7 +350,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
     }</code></pre>
 </details>
 </dd>
-<dt id="src.utils.modelFuncs.getRNNSplit"><code class="name flex">
+<dt id="howiml.utils.modelFuncs.getRNNSplit"><code class="name flex">
 <span>def <span class="ident">getRNNSplit</span></span>(<span>x_data, y_data, lookback, validation_split=0.2)</span>
 </code></dt>
 <dd>
@@ -405,7 +398,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
     return [X, X_val, Y, Y_val]</code></pre>
 </details>
 </dd>
-<dt id="src.utils.modelFuncs.getTrainingSummary"><code class="name flex">
+<dt id="howiml.utils.modelFuncs.getTrainingSummary"><code class="name flex">
 <span>def <span class="ident">getTrainingSummary</span></span>(<span>modelList)</span>
 </code></dt>
 <dd>
@@ -462,7 +455,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
     return loss_dict</code></pre>
 </details>
 </dd>
-<dt id="src.utils.modelFuncs.loadModel"><code class="name flex">
+<dt id="howiml.utils.modelFuncs.loadModel"><code class="name flex">
 <span>def <span class="ident">loadModel</span></span>(<span>modelname, filename, targetColumns, ensembleName=None)</span>
 </code></dt>
 <dd>
@@ -481,10 +474,10 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
     modName = &#34;_&#34;.join(modelname.split(&#39; &#39;))
     
     if ensembleName is None:
-        directory = ROOT_PATH + &#39;/src/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39; + modName + &#39;_&#39; + joinedColumns
+        directory = ROOT_PATH + &#39;/howiml/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39; + modName + &#39;_&#39; + joinedColumns
     else:    
         ensName = &#34;_&#34;.join(ensembleName.split(&#39; &#39;))
-        directory = ROOT_PATH + &#39;/src/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39; + ensName + &#39;_&#39; + joinedColumns + &#39;/&#39; + modName
+        directory = ROOT_PATH + &#39;/howiml/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39; + ensName + &#39;_&#39; + joinedColumns + &#39;/&#39; + modName
     
     if os.path.isfile((directory + &#34;.h5&#34;)) and os.path.isfile((directory + &#34;.h5&#34;)):
         model = load_model(directory + &#34;.h5&#34;)
@@ -495,7 +488,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
     return [model, history]</code></pre>
 </details>
 </dd>
-<dt id="src.utils.modelFuncs.plotKerasModel"><code class="name flex">
+<dt id="howiml.utils.modelFuncs.plotKerasModel"><code class="name flex">
 <span>def <span class="ident">plotKerasModel</span></span>(<span>model)</span>
 </code></dt>
 <dd>
@@ -510,7 +503,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
     plot_model(model.model)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.modelFuncs.printModelSummary"><code class="name flex">
+<dt id="howiml.utils.modelFuncs.printModelSummary"><code class="name flex">
 <span>def <span class="ident">printModelSummary</span></span>(<span>model)</span>
 </code></dt>
 <dd>
@@ -543,7 +536,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
         print(&#34;Simple models have no summary&#34;)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.modelFuncs.printModelWeights"><code class="name flex">
+<dt id="howiml.utils.modelFuncs.printModelWeights"><code class="name flex">
 <span>def <span class="ident">printModelWeights</span></span>(<span>model)</span>
 </code></dt>
 <dd>
@@ -579,7 +572,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
             print(&#34;No weights found&#34;)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.modelFuncs.saveModels"><code class="name flex">
+<dt id="howiml.utils.modelFuncs.saveModels"><code class="name flex">
 <span>def <span class="ident">saveModels</span></span>(<span>modelList, filename, targetColumns)</span>
 </code></dt>
 <dd>
@@ -597,7 +590,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
     
     for model in modelList:
         modName = &#34;_&#34;.join(model.name.split(&#39; &#39;))
-        directory = ROOT_PATH + &#39;/src/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39;
+        directory = ROOT_PATH + &#39;/howiml/ml/trained_models/&#39; + subdir + &#39;/&#39; + datafile + &#39;/&#39;
         if not os.path.exists(directory):
             os.makedirs(directory)
         modelPath = directory
@@ -606,7 +599,7 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
         model.save(modelPath, modelName)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.modelFuncs.trainModels"><code class="name flex">
+<dt id="howiml.utils.modelFuncs.trainModels"><code class="name flex">
 <span>def <span class="ident">trainModels</span></span>(<span>modelList, filename, targetColumns, retrain=False, save=True)</span>
 </code></dt>
 <dd>
@@ -668,21 +661,21 @@ def getRNNSplit(x_data, y_data, lookback, validation_split=0.2):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="src.utils" href="index.html">src.utils</a></code></li>
+<li><code><a title="howiml.utils" href="index.html">howiml.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
-<li><code><a title="src.utils.modelFuncs.getBasicCallbacks" href="#src.utils.modelFuncs.getBasicCallbacks">getBasicCallbacks</a></code></li>
-<li><code><a title="src.utils.modelFuncs.getBasicHyperparams" href="#src.utils.modelFuncs.getBasicHyperparams">getBasicHyperparams</a></code></li>
-<li><code><a title="src.utils.modelFuncs.getRNNSplit" href="#src.utils.modelFuncs.getRNNSplit">getRNNSplit</a></code></li>
-<li><code><a title="src.utils.modelFuncs.getTrainingSummary" href="#src.utils.modelFuncs.getTrainingSummary">getTrainingSummary</a></code></li>
-<li><code><a title="src.utils.modelFuncs.loadModel" href="#src.utils.modelFuncs.loadModel">loadModel</a></code></li>
-<li><code><a title="src.utils.modelFuncs.plotKerasModel" href="#src.utils.modelFuncs.plotKerasModel">plotKerasModel</a></code></li>
-<li><code><a title="src.utils.modelFuncs.printModelSummary" href="#src.utils.modelFuncs.printModelSummary">printModelSummary</a></code></li>
-<li><code><a title="src.utils.modelFuncs.printModelWeights" href="#src.utils.modelFuncs.printModelWeights">printModelWeights</a></code></li>
-<li><code><a title="src.utils.modelFuncs.saveModels" href="#src.utils.modelFuncs.saveModels">saveModels</a></code></li>
-<li><code><a title="src.utils.modelFuncs.trainModels" href="#src.utils.modelFuncs.trainModels">trainModels</a></code></li>
+<li><code><a title="howiml.utils.modelFuncs.getBasicCallbacks" href="#howiml.utils.modelFuncs.getBasicCallbacks">getBasicCallbacks</a></code></li>
+<li><code><a title="howiml.utils.modelFuncs.getBasicHyperparams" href="#howiml.utils.modelFuncs.getBasicHyperparams">getBasicHyperparams</a></code></li>
+<li><code><a title="howiml.utils.modelFuncs.getRNNSplit" href="#howiml.utils.modelFuncs.getRNNSplit">getRNNSplit</a></code></li>
+<li><code><a title="howiml.utils.modelFuncs.getTrainingSummary" href="#howiml.utils.modelFuncs.getTrainingSummary">getTrainingSummary</a></code></li>
+<li><code><a title="howiml.utils.modelFuncs.loadModel" href="#howiml.utils.modelFuncs.loadModel">loadModel</a></code></li>
+<li><code><a title="howiml.utils.modelFuncs.plotKerasModel" href="#howiml.utils.modelFuncs.plotKerasModel">plotKerasModel</a></code></li>
+<li><code><a title="howiml.utils.modelFuncs.printModelSummary" href="#howiml.utils.modelFuncs.printModelSummary">printModelSummary</a></code></li>
+<li><code><a title="howiml.utils.modelFuncs.printModelWeights" href="#howiml.utils.modelFuncs.printModelWeights">printModelWeights</a></code></li>
+<li><code><a title="howiml.utils.modelFuncs.saveModels" href="#howiml.utils.modelFuncs.saveModels">saveModels</a></code></li>
+<li><code><a title="howiml.utils.modelFuncs.trainModels" href="#howiml.utils.modelFuncs.trainModels">trainModels</a></code></li>
 </ul>
 </li>
 </ul>

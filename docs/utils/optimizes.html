@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>src.utils.optimizes API documentation</title>
+<title>howiml.utils.optimizes API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,7 +17,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>src.utils.optimizes</code></h1>
+<h1 class="title">Module <code>howiml.utils.optimizes</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -56,7 +56,7 @@ def getOptimizerNadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="src.utils.optimizes.getOptimizerAdadelta"><code class="name flex">
+<dt id="howiml.utils.optimizes.getOptimizerAdadelta"><code class="name flex">
 <span>def <span class="ident">getOptimizerAdadelta</span></span>(<span>learning_rate=0.0001, rho=0.95)</span>
 </code></dt>
 <dd>
@@ -69,7 +69,7 @@ def getOptimizerNadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999):
     return optimizers.Adadelta(learning_rate=learning_rate, rho=rho)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.optimizes.getOptimizerAdagrad"><code class="name flex">
+<dt id="howiml.utils.optimizes.getOptimizerAdagrad"><code class="name flex">
 <span>def <span class="ident">getOptimizerAdagrad</span></span>(<span>learning_rate=0.01)</span>
 </code></dt>
 <dd>
@@ -82,7 +82,7 @@ def getOptimizerNadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999):
     return optimizers.Adagrad(learning_rate=learning_rate)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.optimizes.getOptimizerAdam"><code class="name flex">
+<dt id="howiml.utils.optimizes.getOptimizerAdam"><code class="name flex">
 <span>def <span class="ident">getOptimizerAdam</span></span>(<span>learning_rate=0.001, beta_1=0.9, beta_2=0.999, amsgrad=False)</span>
 </code></dt>
 <dd>
@@ -95,7 +95,7 @@ def getOptimizerNadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999):
     return optimizers.Adam(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2, amsgrad=amsgrad)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.optimizes.getOptimizerAdamax"><code class="name flex">
+<dt id="howiml.utils.optimizes.getOptimizerAdamax"><code class="name flex">
 <span>def <span class="ident">getOptimizerAdamax</span></span>(<span>learning_rate=0.002, beta_1=0.9, beta_2=0.999)</span>
 </code></dt>
 <dd>
@@ -108,7 +108,7 @@ def getOptimizerNadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999):
     return optimizers.Adamax(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.optimizes.getOptimizerNadam"><code class="name flex">
+<dt id="howiml.utils.optimizes.getOptimizerNadam"><code class="name flex">
 <span>def <span class="ident">getOptimizerNadam</span></span>(<span>learning_rate=0.002, beta_1=0.9, beta_2=0.999)</span>
 </code></dt>
 <dd>
@@ -121,7 +121,7 @@ def getOptimizerNadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999):
     return optimizers.Nadam(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.optimizes.getOptimizerRMSprop"><code class="name flex">
+<dt id="howiml.utils.optimizes.getOptimizerRMSprop"><code class="name flex">
 <span>def <span class="ident">getOptimizerRMSprop</span></span>(<span>learning_rate=0.0001, rho=0.9)</span>
 </code></dt>
 <dd>
@@ -134,7 +134,7 @@ def getOptimizerNadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999):
     return optimizers.RMSprop(learning_rate=learning_rate, rho=rho)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.optimizes.getOptimizerSGD"><code class="name flex">
+<dt id="howiml.utils.optimizes.getOptimizerSGD"><code class="name flex">
 <span>def <span class="ident">getOptimizerSGD</span></span>(<span>learning_rate=0.01, momentum=0.0, nesterov=False)</span>
 </code></dt>
 <dd>
@@ -160,18 +160,18 @@ def getOptimizerNadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="src.utils" href="index.html">src.utils</a></code></li>
+<li><code><a title="howiml.utils" href="index.html">howiml.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="src.utils.optimizes.getOptimizerAdadelta" href="#src.utils.optimizes.getOptimizerAdadelta">getOptimizerAdadelta</a></code></li>
-<li><code><a title="src.utils.optimizes.getOptimizerAdagrad" href="#src.utils.optimizes.getOptimizerAdagrad">getOptimizerAdagrad</a></code></li>
-<li><code><a title="src.utils.optimizes.getOptimizerAdam" href="#src.utils.optimizes.getOptimizerAdam">getOptimizerAdam</a></code></li>
-<li><code><a title="src.utils.optimizes.getOptimizerAdamax" href="#src.utils.optimizes.getOptimizerAdamax">getOptimizerAdamax</a></code></li>
-<li><code><a title="src.utils.optimizes.getOptimizerNadam" href="#src.utils.optimizes.getOptimizerNadam">getOptimizerNadam</a></code></li>
-<li><code><a title="src.utils.optimizes.getOptimizerRMSprop" href="#src.utils.optimizes.getOptimizerRMSprop">getOptimizerRMSprop</a></code></li>
-<li><code><a title="src.utils.optimizes.getOptimizerSGD" href="#src.utils.optimizes.getOptimizerSGD">getOptimizerSGD</a></code></li>
+<li><code><a title="howiml.utils.optimizes.getOptimizerAdadelta" href="#howiml.utils.optimizes.getOptimizerAdadelta">getOptimizerAdadelta</a></code></li>
+<li><code><a title="howiml.utils.optimizes.getOptimizerAdagrad" href="#howiml.utils.optimizes.getOptimizerAdagrad">getOptimizerAdagrad</a></code></li>
+<li><code><a title="howiml.utils.optimizes.getOptimizerAdam" href="#howiml.utils.optimizes.getOptimizerAdam">getOptimizerAdam</a></code></li>
+<li><code><a title="howiml.utils.optimizes.getOptimizerAdamax" href="#howiml.utils.optimizes.getOptimizerAdamax">getOptimizerAdamax</a></code></li>
+<li><code><a title="howiml.utils.optimizes.getOptimizerNadam" href="#howiml.utils.optimizes.getOptimizerNadam">getOptimizerNadam</a></code></li>
+<li><code><a title="howiml.utils.optimizes.getOptimizerRMSprop" href="#howiml.utils.optimizes.getOptimizerRMSprop">getOptimizerRMSprop</a></code></li>
+<li><code><a title="howiml.utils.optimizes.getOptimizerSGD" href="#howiml.utils.optimizes.getOptimizerSGD">getOptimizerSGD</a></code></li>
 </ul>
 </li>
 </ul>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>src.utils.models API documentation</title>
+<title>howiml.utils.models API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,7 +17,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>src.utils.models</code></h1>
+<h1 class="title">Module <code>howiml.utils.models</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -25,12 +25,9 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import sys, os
-ROOT_PATH = os.path.abspath(&#34;.&#34;).split(&#34;src&#34;)[0]
+ROOT_PATH = os.path.abspath(&#34;.&#34;)
 if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
-module_path = os.path.abspath(os.path.join(ROOT_PATH+&#34;/src/utils/&#34;))
-if module_path not in sys.path:
-    sys.path.append(module_path)
 
 from sklearn.linear_model import (ElasticNet, ElasticNetCV, LinearRegression, Lasso, LassoCV, Ridge, RidgeCV)
 from sklearn.neural_network import MLPRegressor, BernoulliRBM
@@ -52,12 +49,9 @@ from copy import deepcopy
 import pickle
 import numpy as np
 import tensorflow as tf
-from modelFuncs import getRNNSplit
+from howiml.utils.modelFuncs import getRNNSplit
 
-np.random.seed(100)
-tf.random.set_seed(100)
-
-CURRENT_MODEL_WEIGHTS_FILEPATH = ROOT_PATH + &#39;/src/ml/trained_models/training_weights/&#39;
+CURRENT_MODEL_WEIGHTS_FILEPATH = ROOT_PATH + &#39;/howiml/ml/trained_models/training_weights/&#39;
 
 class Args():
     def __init__(self, args):
@@ -702,7 +696,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="src.utils.models.autoencoder_Dropout"><code class="name flex">
+<dt id="howiml.utils.models.autoencoder_Dropout"><code class="name flex">
 <span>def <span class="ident">autoencoder_Dropout</span></span>(<span>params, dropout=0.2, encodingDim=3)</span>
 </code></dt>
 <dd>
@@ -739,7 +733,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return AutoencoderModel(model, X, args, modelType=&#34;AUTOENCODER&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.autoencoder_Regularized"><code class="name flex">
+<dt id="howiml.utils.models.autoencoder_Regularized"><code class="name flex">
 <span>def <span class="ident">autoencoder_Regularized</span></span>(<span>params, l1_rate=0.001, encodingDim=3)</span>
 </code></dt>
 <dd>
@@ -769,7 +763,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return AutoencoderModel(model, X, args, modelType=&#34;AUTOENCODER&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.ensembleModel"><code class="name flex">
+<dt id="howiml.utils.models.ensembleModel"><code class="name flex">
 <span>def <span class="ident">ensembleModel</span></span>(<span>params, models)</span>
 </code></dt>
 <dd>
@@ -795,7 +789,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     )</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.kerasGRU"><code class="name flex">
+<dt id="howiml.utils.models.kerasGRU"><code class="name flex">
 <span>def <span class="ident">kerasGRU</span></span>(<span>params, layers=[128], dropout=0.0, recurrentDropout=0.0, alpha=None, training=False)</span>
 </code></dt>
 <dd>
@@ -864,7 +858,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     )</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.kerasLSTM"><code class="name flex">
+<dt id="howiml.utils.models.kerasLSTM"><code class="name flex">
 <span>def <span class="ident">kerasLSTM</span></span>(<span>params, layers=[128], dropout=0.0, recurrentDropout=0.0, alpha=None, training=False)</span>
 </code></dt>
 <dd>
@@ -931,7 +925,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     )</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.kerasMLP"><code class="name flex">
+<dt id="howiml.utils.models.kerasMLP"><code class="name flex">
 <span>def <span class="ident">kerasMLP</span></span>(<span>params, structure, dropout=None, l1_rate=0.0, l2_rate=0.0)</span>
 </code></dt>
 <dd>
@@ -995,7 +989,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     )</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnAdaBoost"><code class="name flex">
+<dt id="howiml.utils.models.sklearnAdaBoost"><code class="name flex">
 <span>def <span class="ident">sklearnAdaBoost</span></span>(<span>params)</span>
 </code></dt>
 <dd>
@@ -1012,7 +1006,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnBagging"><code class="name flex">
+<dt id="howiml.utils.models.sklearnBagging"><code class="name flex">
 <span>def <span class="ident">sklearnBagging</span></span>(<span>params)</span>
 </code></dt>
 <dd>
@@ -1029,7 +1023,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnDecisionTree"><code class="name flex">
+<dt id="howiml.utils.models.sklearnDecisionTree"><code class="name flex">
 <span>def <span class="ident">sklearnDecisionTree</span></span>(<span>params)</span>
 </code></dt>
 <dd>
@@ -1046,7 +1040,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnElasticNet"><code class="name flex">
+<dt id="howiml.utils.models.sklearnElasticNet"><code class="name flex">
 <span>def <span class="ident">sklearnElasticNet</span></span>(<span>params, alpha=1.0, l1_ratio=0.5)</span>
 </code></dt>
 <dd>
@@ -1063,7 +1057,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnElasticNetCV"><code class="name flex">
+<dt id="howiml.utils.models.sklearnElasticNetCV"><code class="name flex">
 <span>def <span class="ident">sklearnElasticNetCV</span></span>(<span>params, alphas=(0.1, 1.0, 10.0), l1_ratio=0.5, folds=10)</span>
 </code></dt>
 <dd>
@@ -1080,7 +1074,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnGradientBoosting"><code class="name flex">
+<dt id="howiml.utils.models.sklearnGradientBoosting"><code class="name flex">
 <span>def <span class="ident">sklearnGradientBoosting</span></span>(<span>params)</span>
 </code></dt>
 <dd>
@@ -1097,7 +1091,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnLasso"><code class="name flex">
+<dt id="howiml.utils.models.sklearnLasso"><code class="name flex">
 <span>def <span class="ident">sklearnLasso</span></span>(<span>params, alpha=0.1)</span>
 </code></dt>
 <dd>
@@ -1114,7 +1108,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnLassoCV"><code class="name flex">
+<dt id="howiml.utils.models.sklearnLassoCV"><code class="name flex">
 <span>def <span class="ident">sklearnLassoCV</span></span>(<span>params, alphas=(0.1, 1.0, 10.0), folds=10)</span>
 </code></dt>
 <dd>
@@ -1131,7 +1125,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnLinear"><code class="name flex">
+<dt id="howiml.utils.models.sklearnLinear"><code class="name flex">
 <span>def <span class="ident">sklearnLinear</span></span>(<span>params)</span>
 </code></dt>
 <dd>
@@ -1148,7 +1142,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnMLP"><code class="name flex">
+<dt id="howiml.utils.models.sklearnMLP"><code class="name flex">
 <span>def <span class="ident">sklearnMLP</span></span>(<span>params)</span>
 </code></dt>
 <dd>
@@ -1165,7 +1159,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnRandomForest"><code class="name flex">
+<dt id="howiml.utils.models.sklearnRandomForest"><code class="name flex">
 <span>def <span class="ident">sklearnRandomForest</span></span>(<span>params)</span>
 </code></dt>
 <dd>
@@ -1182,7 +1176,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnRidge"><code class="name flex">
+<dt id="howiml.utils.models.sklearnRidge"><code class="name flex">
 <span>def <span class="ident">sklearnRidge</span></span>(<span>params, alpha=1.0)</span>
 </code></dt>
 <dd>
@@ -1199,7 +1193,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnRidgeCV"><code class="name flex">
+<dt id="howiml.utils.models.sklearnRidgeCV"><code class="name flex">
 <span>def <span class="ident">sklearnRidgeCV</span></span>(<span>params, alphas=(0.1, 1.0, 10.0), folds=10)</span>
 </code></dt>
 <dd>
@@ -1216,7 +1210,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return MachinLearningModel(model, X, Y, modelType=&#34;Linear&#34;, name=name)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.sklearnSVM"><code class="name flex">
+<dt id="howiml.utils.models.sklearnSVM"><code class="name flex">
 <span>def <span class="ident">sklearnSVM</span></span>(<span>params)</span>
 </code></dt>
 <dd>
@@ -1238,7 +1232,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="src.utils.models.Args"><code class="flex name class">
+<dt id="howiml.utils.models.Args"><code class="flex name class">
 <span>class <span class="ident">Args</span></span>
 <span>(</span><span>args)</span>
 </code></dt>
@@ -1263,7 +1257,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
         self.testSize = args[&#39;testSize&#39;]</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.AutoencoderModel"><code class="flex name class">
+<dt id="howiml.utils.models.AutoencoderModel"><code class="flex name class">
 <span>class <span class="ident">AutoencoderModel</span></span>
 <span>(</span><span>model, X_train, args=None, modelType='AUTOENCODER', scaler='standard', name=None)</span>
 </code></dt>
@@ -1322,7 +1316,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="src.utils.models.AutoencoderModel.predict"><code class="name flex">
+<dt id="howiml.utils.models.AutoencoderModel.predict"><code class="name flex">
 <span>def <span class="ident">predict</span></span>(<span>self, X, y=None)</span>
 </code></dt>
 <dd>
@@ -1339,7 +1333,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     )</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.AutoencoderModel.save"><code class="name flex">
+<dt id="howiml.utils.models.AutoencoderModel.save"><code class="name flex">
 <span>def <span class="ident">save</span></span>(<span>self, directory, name)</span>
 </code></dt>
 <dd>
@@ -1355,7 +1349,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
             pickle.dump(self.history, file_pi)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.AutoencoderModel.train"><code class="name flex">
+<dt id="howiml.utils.models.AutoencoderModel.train"><code class="name flex">
 <span>def <span class="ident">train</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1384,7 +1378,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
 </dd>
 </dl>
 </dd>
-<dt id="src.utils.models.EnsembleModel"><code class="flex name class">
+<dt id="howiml.utils.models.EnsembleModel"><code class="flex name class">
 <span>class <span class="ident">EnsembleModel</span></span>
 <span>(</span><span>models, X_train, y_train, modelType='Ensemble', name=None)</span>
 </code></dt>
@@ -1479,7 +1473,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="src.utils.models.EnsembleModel.predict"><code class="name flex">
+<dt id="howiml.utils.models.EnsembleModel.predict"><code class="name flex">
 <span>def <span class="ident">predict</span></span>(<span>self, X, y)</span>
 </code></dt>
 <dd>
@@ -1503,7 +1497,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     return self.MLmodel.predict(test)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.EnsembleModel.save"><code class="name flex">
+<dt id="howiml.utils.models.EnsembleModel.save"><code class="name flex">
 <span>def <span class="ident">save</span></span>(<span>self, directory, name)</span>
 </code></dt>
 <dd>
@@ -1521,7 +1515,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
             model.save(dirr, &#34;_&#34;.join(model.name.split(&#39; &#39;)))</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.EnsembleModel.train"><code class="name flex">
+<dt id="howiml.utils.models.EnsembleModel.train"><code class="name flex">
 <span>def <span class="ident">train</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1553,7 +1547,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
     self.MLmodel.train()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.EnsembleModel.trainEnsemble"><code class="name flex">
+<dt id="howiml.utils.models.EnsembleModel.trainEnsemble"><code class="name flex">
 <span>def <span class="ident">trainEnsemble</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1586,7 +1580,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
 </dd>
 </dl>
 </dd>
-<dt id="src.utils.models.MachinLearningModel"><code class="flex name class">
+<dt id="howiml.utils.models.MachinLearningModel"><code class="flex name class">
 <span>class <span class="ident">MachinLearningModel</span></span>
 <span>(</span><span>model, X_train, y_train, args=None, modelType=None, scaler='standard', name=None)</span>
 </code></dt>
@@ -1757,7 +1751,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="src.utils.models.MachinLearningModel.predict"><code class="name flex">
+<dt id="howiml.utils.models.MachinLearningModel.predict"><code class="name flex">
 <span>def <span class="ident">predict</span></span>(<span>self, X, y=None)</span>
 </code></dt>
 <dd>
@@ -1786,7 +1780,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
         )</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.MachinLearningModel.predictMultiple"><code class="name flex">
+<dt id="howiml.utils.models.MachinLearningModel.predictMultiple"><code class="name flex">
 <span>def <span class="ident">predictMultiple</span></span>(<span>self, X, y, numberOfPredictions=20)</span>
 </code></dt>
 <dd>
@@ -1809,7 +1803,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
         return None</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.MachinLearningModel.save"><code class="name flex">
+<dt id="howiml.utils.models.MachinLearningModel.save"><code class="name flex">
 <span>def <span class="ident">save</span></span>(<span>self, directory, name)</span>
 </code></dt>
 <dd>
@@ -1825,7 +1819,7 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
             pickle.dump(self.history, file_pi)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.models.MachinLearningModel.train"><code class="name flex">
+<dt id="howiml.utils.models.MachinLearningModel.train"><code class="name flex">
 <span>def <span class="ident">train</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1947,62 +1941,62 @@ def autoencoder_Regularized(params, l1_rate=10e-4, encodingDim=3):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="src.utils" href="index.html">src.utils</a></code></li>
+<li><code><a title="howiml.utils" href="index.html">howiml.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="src.utils.models.autoencoder_Dropout" href="#src.utils.models.autoencoder_Dropout">autoencoder_Dropout</a></code></li>
-<li><code><a title="src.utils.models.autoencoder_Regularized" href="#src.utils.models.autoencoder_Regularized">autoencoder_Regularized</a></code></li>
-<li><code><a title="src.utils.models.ensembleModel" href="#src.utils.models.ensembleModel">ensembleModel</a></code></li>
-<li><code><a title="src.utils.models.kerasGRU" href="#src.utils.models.kerasGRU">kerasGRU</a></code></li>
-<li><code><a title="src.utils.models.kerasLSTM" href="#src.utils.models.kerasLSTM">kerasLSTM</a></code></li>
-<li><code><a title="src.utils.models.kerasMLP" href="#src.utils.models.kerasMLP">kerasMLP</a></code></li>
-<li><code><a title="src.utils.models.sklearnAdaBoost" href="#src.utils.models.sklearnAdaBoost">sklearnAdaBoost</a></code></li>
-<li><code><a title="src.utils.models.sklearnBagging" href="#src.utils.models.sklearnBagging">sklearnBagging</a></code></li>
-<li><code><a title="src.utils.models.sklearnDecisionTree" href="#src.utils.models.sklearnDecisionTree">sklearnDecisionTree</a></code></li>
-<li><code><a title="src.utils.models.sklearnElasticNet" href="#src.utils.models.sklearnElasticNet">sklearnElasticNet</a></code></li>
-<li><code><a title="src.utils.models.sklearnElasticNetCV" href="#src.utils.models.sklearnElasticNetCV">sklearnElasticNetCV</a></code></li>
-<li><code><a title="src.utils.models.sklearnGradientBoosting" href="#src.utils.models.sklearnGradientBoosting">sklearnGradientBoosting</a></code></li>
-<li><code><a title="src.utils.models.sklearnLasso" href="#src.utils.models.sklearnLasso">sklearnLasso</a></code></li>
-<li><code><a title="src.utils.models.sklearnLassoCV" href="#src.utils.models.sklearnLassoCV">sklearnLassoCV</a></code></li>
-<li><code><a title="src.utils.models.sklearnLinear" href="#src.utils.models.sklearnLinear">sklearnLinear</a></code></li>
-<li><code><a title="src.utils.models.sklearnMLP" href="#src.utils.models.sklearnMLP">sklearnMLP</a></code></li>
-<li><code><a title="src.utils.models.sklearnRandomForest" href="#src.utils.models.sklearnRandomForest">sklearnRandomForest</a></code></li>
-<li><code><a title="src.utils.models.sklearnRidge" href="#src.utils.models.sklearnRidge">sklearnRidge</a></code></li>
-<li><code><a title="src.utils.models.sklearnRidgeCV" href="#src.utils.models.sklearnRidgeCV">sklearnRidgeCV</a></code></li>
-<li><code><a title="src.utils.models.sklearnSVM" href="#src.utils.models.sklearnSVM">sklearnSVM</a></code></li>
+<li><code><a title="howiml.utils.models.autoencoder_Dropout" href="#howiml.utils.models.autoencoder_Dropout">autoencoder_Dropout</a></code></li>
+<li><code><a title="howiml.utils.models.autoencoder_Regularized" href="#howiml.utils.models.autoencoder_Regularized">autoencoder_Regularized</a></code></li>
+<li><code><a title="howiml.utils.models.ensembleModel" href="#howiml.utils.models.ensembleModel">ensembleModel</a></code></li>
+<li><code><a title="howiml.utils.models.kerasGRU" href="#howiml.utils.models.kerasGRU">kerasGRU</a></code></li>
+<li><code><a title="howiml.utils.models.kerasLSTM" href="#howiml.utils.models.kerasLSTM">kerasLSTM</a></code></li>
+<li><code><a title="howiml.utils.models.kerasMLP" href="#howiml.utils.models.kerasMLP">kerasMLP</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnAdaBoost" href="#howiml.utils.models.sklearnAdaBoost">sklearnAdaBoost</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnBagging" href="#howiml.utils.models.sklearnBagging">sklearnBagging</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnDecisionTree" href="#howiml.utils.models.sklearnDecisionTree">sklearnDecisionTree</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnElasticNet" href="#howiml.utils.models.sklearnElasticNet">sklearnElasticNet</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnElasticNetCV" href="#howiml.utils.models.sklearnElasticNetCV">sklearnElasticNetCV</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnGradientBoosting" href="#howiml.utils.models.sklearnGradientBoosting">sklearnGradientBoosting</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnLasso" href="#howiml.utils.models.sklearnLasso">sklearnLasso</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnLassoCV" href="#howiml.utils.models.sklearnLassoCV">sklearnLassoCV</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnLinear" href="#howiml.utils.models.sklearnLinear">sklearnLinear</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnMLP" href="#howiml.utils.models.sklearnMLP">sklearnMLP</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnRandomForest" href="#howiml.utils.models.sklearnRandomForest">sklearnRandomForest</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnRidge" href="#howiml.utils.models.sklearnRidge">sklearnRidge</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnRidgeCV" href="#howiml.utils.models.sklearnRidgeCV">sklearnRidgeCV</a></code></li>
+<li><code><a title="howiml.utils.models.sklearnSVM" href="#howiml.utils.models.sklearnSVM">sklearnSVM</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="src.utils.models.Args" href="#src.utils.models.Args">Args</a></code></h4>
+<h4><code><a title="howiml.utils.models.Args" href="#howiml.utils.models.Args">Args</a></code></h4>
 </li>
 <li>
-<h4><code><a title="src.utils.models.AutoencoderModel" href="#src.utils.models.AutoencoderModel">AutoencoderModel</a></code></h4>
+<h4><code><a title="howiml.utils.models.AutoencoderModel" href="#howiml.utils.models.AutoencoderModel">AutoencoderModel</a></code></h4>
 <ul class="">
-<li><code><a title="src.utils.models.AutoencoderModel.predict" href="#src.utils.models.AutoencoderModel.predict">predict</a></code></li>
-<li><code><a title="src.utils.models.AutoencoderModel.save" href="#src.utils.models.AutoencoderModel.save">save</a></code></li>
-<li><code><a title="src.utils.models.AutoencoderModel.train" href="#src.utils.models.AutoencoderModel.train">train</a></code></li>
+<li><code><a title="howiml.utils.models.AutoencoderModel.predict" href="#howiml.utils.models.AutoencoderModel.predict">predict</a></code></li>
+<li><code><a title="howiml.utils.models.AutoencoderModel.save" href="#howiml.utils.models.AutoencoderModel.save">save</a></code></li>
+<li><code><a title="howiml.utils.models.AutoencoderModel.train" href="#howiml.utils.models.AutoencoderModel.train">train</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="src.utils.models.EnsembleModel" href="#src.utils.models.EnsembleModel">EnsembleModel</a></code></h4>
+<h4><code><a title="howiml.utils.models.EnsembleModel" href="#howiml.utils.models.EnsembleModel">EnsembleModel</a></code></h4>
 <ul class="">
-<li><code><a title="src.utils.models.EnsembleModel.predict" href="#src.utils.models.EnsembleModel.predict">predict</a></code></li>
-<li><code><a title="src.utils.models.EnsembleModel.save" href="#src.utils.models.EnsembleModel.save">save</a></code></li>
-<li><code><a title="src.utils.models.EnsembleModel.train" href="#src.utils.models.EnsembleModel.train">train</a></code></li>
-<li><code><a title="src.utils.models.EnsembleModel.trainEnsemble" href="#src.utils.models.EnsembleModel.trainEnsemble">trainEnsemble</a></code></li>
+<li><code><a title="howiml.utils.models.EnsembleModel.predict" href="#howiml.utils.models.EnsembleModel.predict">predict</a></code></li>
+<li><code><a title="howiml.utils.models.EnsembleModel.save" href="#howiml.utils.models.EnsembleModel.save">save</a></code></li>
+<li><code><a title="howiml.utils.models.EnsembleModel.train" href="#howiml.utils.models.EnsembleModel.train">train</a></code></li>
+<li><code><a title="howiml.utils.models.EnsembleModel.trainEnsemble" href="#howiml.utils.models.EnsembleModel.trainEnsemble">trainEnsemble</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="src.utils.models.MachinLearningModel" href="#src.utils.models.MachinLearningModel">MachinLearningModel</a></code></h4>
+<h4><code><a title="howiml.utils.models.MachinLearningModel" href="#howiml.utils.models.MachinLearningModel">MachinLearningModel</a></code></h4>
 <ul class="">
-<li><code><a title="src.utils.models.MachinLearningModel.predict" href="#src.utils.models.MachinLearningModel.predict">predict</a></code></li>
-<li><code><a title="src.utils.models.MachinLearningModel.predictMultiple" href="#src.utils.models.MachinLearningModel.predictMultiple">predictMultiple</a></code></li>
-<li><code><a title="src.utils.models.MachinLearningModel.save" href="#src.utils.models.MachinLearningModel.save">save</a></code></li>
-<li><code><a title="src.utils.models.MachinLearningModel.train" href="#src.utils.models.MachinLearningModel.train">train</a></code></li>
+<li><code><a title="howiml.utils.models.MachinLearningModel.predict" href="#howiml.utils.models.MachinLearningModel.predict">predict</a></code></li>
+<li><code><a title="howiml.utils.models.MachinLearningModel.predictMultiple" href="#howiml.utils.models.MachinLearningModel.predictMultiple">predictMultiple</a></code></li>
+<li><code><a title="howiml.utils.models.MachinLearningModel.save" href="#howiml.utils.models.MachinLearningModel.save">save</a></code></li>
+<li><code><a title="howiml.utils.models.MachinLearningModel.train" href="#howiml.utils.models.MachinLearningModel.train">train</a></code></li>
 </ul>
 </li>
 </ul>

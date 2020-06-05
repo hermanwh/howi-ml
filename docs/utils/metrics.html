@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>src.utils.metrics API documentation</title>
+<title>howiml.utils.metrics API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,7 +17,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>src.utils.metrics</code></h1>
+<h1 class="title">Module <code>howiml.utils.metrics</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -31,10 +31,7 @@
     mean_absolute_error,
     max_error
 )
-
 import numpy as np
-
-np.random.seed(100)
 
 def calculateR2Score(y_true, y_pred):
     r2 = r2_score(y_true, y_pred)
@@ -98,7 +95,7 @@ def elu(x, a):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="src.utils.metrics.calculateMAE"><code class="name flex">
+<dt id="howiml.utils.metrics.calculateMAE"><code class="name flex">
 <span>def <span class="ident">calculateMAE</span></span>(<span>y_true, y_pred)</span>
 </code></dt>
 <dd>
@@ -112,7 +109,7 @@ def elu(x, a):
     return mae</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.calculateMSE"><code class="name flex">
+<dt id="howiml.utils.metrics.calculateMSE"><code class="name flex">
 <span>def <span class="ident">calculateMSE</span></span>(<span>y_true, y_pred)</span>
 </code></dt>
 <dd>
@@ -126,7 +123,7 @@ def elu(x, a):
     return mse</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.calculateMaxError"><code class="name flex">
+<dt id="howiml.utils.metrics.calculateMaxError"><code class="name flex">
 <span>def <span class="ident">calculateMaxError</span></span>(<span>y_true, y_pred)</span>
 </code></dt>
 <dd>
@@ -143,7 +140,7 @@ def elu(x, a):
     return maxerror</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.calculateMetrics"><code class="name flex">
+<dt id="howiml.utils.metrics.calculateMetrics"><code class="name flex">
 <span>def <span class="ident">calculateMetrics</span></span>(<span>y_true, y_pred)</span>
 </code></dt>
 <dd>
@@ -164,7 +161,7 @@ def elu(x, a):
     return [r2, mse, mae, maxerror]</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.calculateR2Score"><code class="name flex">
+<dt id="howiml.utils.metrics.calculateR2Score"><code class="name flex">
 <span>def <span class="ident">calculateR2Score</span></span>(<span>y_true, y_pred)</span>
 </code></dt>
 <dd>
@@ -178,7 +175,7 @@ def elu(x, a):
     return r2</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.elu"><code class="name flex">
+<dt id="howiml.utils.metrics.elu"><code class="name flex">
 <span>def <span class="ident">elu</span></span>(<span>x, a)</span>
 </code></dt>
 <dd>
@@ -194,7 +191,7 @@ def elu(x, a):
         return a*(np.exp(x) - 1)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.leaky_relu"><code class="name flex">
+<dt id="howiml.utils.metrics.leaky_relu"><code class="name flex">
 <span>def <span class="ident">leaky_relu</span></span>(<span>x, a)</span>
 </code></dt>
 <dd>
@@ -207,7 +204,7 @@ def elu(x, a):
     return np.maximum(x, a*x)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.leaky_relu_vectorized"><code class="name flex">
+<dt id="howiml.utils.metrics.leaky_relu_vectorized"><code class="name flex">
 <span>def <span class="ident">leaky_relu_vectorized</span></span>(<span>x, a)</span>
 </code></dt>
 <dd>
@@ -220,7 +217,7 @@ def elu(x, a):
     return np.vectorize(leaky_relu)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.relu"><code class="name flex">
+<dt id="howiml.utils.metrics.relu"><code class="name flex">
 <span>def <span class="ident">relu</span></span>(<span>x)</span>
 </code></dt>
 <dd>
@@ -233,7 +230,7 @@ def elu(x, a):
     return np.maximum(x, 0)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.relu_vectorized"><code class="name flex">
+<dt id="howiml.utils.metrics.relu_vectorized"><code class="name flex">
 <span>def <span class="ident">relu_vectorized</span></span>(<span>x)</span>
 </code></dt>
 <dd>
@@ -246,7 +243,7 @@ def elu(x, a):
     return np.vectorize(relu)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.sigmoid"><code class="name flex">
+<dt id="howiml.utils.metrics.sigmoid"><code class="name flex">
 <span>def <span class="ident">sigmoid</span></span>(<span>x)</span>
 </code></dt>
 <dd>
@@ -259,7 +256,7 @@ def elu(x, a):
     return 1/(1 + np.exp(-x))</code></pre>
 </details>
 </dd>
-<dt id="src.utils.metrics.tanh"><code class="name flex">
+<dt id="howiml.utils.metrics.tanh"><code class="name flex">
 <span>def <span class="ident">tanh</span></span>(<span>x)</span>
 </code></dt>
 <dd>
@@ -285,23 +282,23 @@ def elu(x, a):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="src.utils" href="index.html">src.utils</a></code></li>
+<li><code><a title="howiml.utils" href="index.html">howiml.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="src.utils.metrics.calculateMAE" href="#src.utils.metrics.calculateMAE">calculateMAE</a></code></li>
-<li><code><a title="src.utils.metrics.calculateMSE" href="#src.utils.metrics.calculateMSE">calculateMSE</a></code></li>
-<li><code><a title="src.utils.metrics.calculateMaxError" href="#src.utils.metrics.calculateMaxError">calculateMaxError</a></code></li>
-<li><code><a title="src.utils.metrics.calculateMetrics" href="#src.utils.metrics.calculateMetrics">calculateMetrics</a></code></li>
-<li><code><a title="src.utils.metrics.calculateR2Score" href="#src.utils.metrics.calculateR2Score">calculateR2Score</a></code></li>
-<li><code><a title="src.utils.metrics.elu" href="#src.utils.metrics.elu">elu</a></code></li>
-<li><code><a title="src.utils.metrics.leaky_relu" href="#src.utils.metrics.leaky_relu">leaky_relu</a></code></li>
-<li><code><a title="src.utils.metrics.leaky_relu_vectorized" href="#src.utils.metrics.leaky_relu_vectorized">leaky_relu_vectorized</a></code></li>
-<li><code><a title="src.utils.metrics.relu" href="#src.utils.metrics.relu">relu</a></code></li>
-<li><code><a title="src.utils.metrics.relu_vectorized" href="#src.utils.metrics.relu_vectorized">relu_vectorized</a></code></li>
-<li><code><a title="src.utils.metrics.sigmoid" href="#src.utils.metrics.sigmoid">sigmoid</a></code></li>
-<li><code><a title="src.utils.metrics.tanh" href="#src.utils.metrics.tanh">tanh</a></code></li>
+<li><code><a title="howiml.utils.metrics.calculateMAE" href="#howiml.utils.metrics.calculateMAE">calculateMAE</a></code></li>
+<li><code><a title="howiml.utils.metrics.calculateMSE" href="#howiml.utils.metrics.calculateMSE">calculateMSE</a></code></li>
+<li><code><a title="howiml.utils.metrics.calculateMaxError" href="#howiml.utils.metrics.calculateMaxError">calculateMaxError</a></code></li>
+<li><code><a title="howiml.utils.metrics.calculateMetrics" href="#howiml.utils.metrics.calculateMetrics">calculateMetrics</a></code></li>
+<li><code><a title="howiml.utils.metrics.calculateR2Score" href="#howiml.utils.metrics.calculateR2Score">calculateR2Score</a></code></li>
+<li><code><a title="howiml.utils.metrics.elu" href="#howiml.utils.metrics.elu">elu</a></code></li>
+<li><code><a title="howiml.utils.metrics.leaky_relu" href="#howiml.utils.metrics.leaky_relu">leaky_relu</a></code></li>
+<li><code><a title="howiml.utils.metrics.leaky_relu_vectorized" href="#howiml.utils.metrics.leaky_relu_vectorized">leaky_relu_vectorized</a></code></li>
+<li><code><a title="howiml.utils.metrics.relu" href="#howiml.utils.metrics.relu">relu</a></code></li>
+<li><code><a title="howiml.utils.metrics.relu_vectorized" href="#howiml.utils.metrics.relu_vectorized">relu_vectorized</a></code></li>
+<li><code><a title="howiml.utils.metrics.sigmoid" href="#howiml.utils.metrics.sigmoid">sigmoid</a></code></li>
+<li><code><a title="howiml.utils.metrics.tanh" href="#howiml.utils.metrics.tanh">tanh</a></code></li>
 </ul>
 </li>
 </ul>

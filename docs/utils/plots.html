@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>src.utils.plots API documentation</title>
+<title>howiml.utils.plots API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,7 +17,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>src.utils.plots</code></h1>
+<h1 class="title">Module <code>howiml.utils.plots</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -27,8 +27,6 @@
 <pre><code class="python">import numpy as np
 import pandas as pd
 import matplotlib.pyplot as pltt
-
-np.random.seed(100)
 
 def getPlotColors():
     colors = [
@@ -294,7 +292,7 @@ def plotTrainingSummary(trainingSummary):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="src.utils.plots.duoPlot"><code class="name flex">
+<dt id="howiml.utils.plots.duoPlot"><code class="name flex">
 <span>def <span class="ident">duoPlot</span></span>(<span>y1, y2, x, plt, columnDescriptions=None, relevantColumns=None, columnUnits=None, color1='#000080', color2='#2ca25f', y2lim=None, textArgs=['Duo plot', 'Date', 'Label 1', 'Label 2'])</span>
 </code></dt>
 <dd>
@@ -329,7 +327,7 @@ def plotTrainingSummary(trainingSummary):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.plots.getPlotColors"><code class="name flex">
+<dt id="howiml.utils.plots.getPlotColors"><code class="name flex">
 <span>def <span class="ident">getPlotColors</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -361,7 +359,7 @@ def plotTrainingSummary(trainingSummary):
     return colors</code></pre>
 </details>
 </dd>
-<dt id="src.utils.plots.plotColumns"><code class="name flex">
+<dt id="howiml.utils.plots.plotColumns"><code class="name flex">
 <span>def <span class="ident">plotColumns</span></span>(<span>dfindex, plt, args, desc='', columnDescriptions=None, trainEndStr=None, columnUnits=None, alpha=0.8, interpol=False, interpoldeg=3)</span>
 </code></dt>
 <dd>
@@ -420,7 +418,7 @@ def plotTrainingSummary(trainingSummary):
     fig.autofmt_xdate()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.plots.plotData"><code class="name flex">
+<dt id="howiml.utils.plots.plotData"><code class="name flex">
 <span>def <span class="ident">plotData</span></span>(<span>df, plt, columnDescriptions={}, relevantColumns=None, columnUnits=None, color='#000080')</span>
 </code></dt>
 <dd>
@@ -468,7 +466,7 @@ def plotTrainingSummary(trainingSummary):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.plots.plotDataByTimeframe"><code class="name flex">
+<dt id="howiml.utils.plots.plotDataByTimeframe"><code class="name flex">
 <span>def <span class="ident">plotDataByTimeframe</span></span>(<span>df, plt, start, end, columnDescriptions=None, relevantColumns=None)</span>
 </code></dt>
 <dd>
@@ -484,7 +482,7 @@ def plotTrainingSummary(trainingSummary):
     plotData(df, plt, columnDescriptions=columnDescriptions, relevantColumns=relevantColumns)</code></pre>
 </details>
 </dd>
-<dt id="src.utils.plots.plotDataColumnSingle"><code class="name flex">
+<dt id="howiml.utils.plots.plotDataColumnSingle"><code class="name flex">
 <span>def <span class="ident">plotDataColumnSingle</span></span>(<span>dfindex, plt, column, data, columnDescriptions=None, color='darkgreen', interpoldeg=3)</span>
 </code></dt>
 <dd>
@@ -519,7 +517,7 @@ def plotTrainingSummary(trainingSummary):
     fig.autofmt_xdate()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.plots.plotModelPredictions"><code class="name flex">
+<dt id="howiml.utils.plots.plotModelPredictions"><code class="name flex">
 <span>def <span class="ident">plotModelPredictions</span></span>(<span>plt, deviationsList, columnsList, indexList, labelNames, columnUnits, traintime, interpol=False, interpoldeg=10)</span>
 </code></dt>
 <dd>
@@ -560,7 +558,7 @@ def plotTrainingSummary(trainingSummary):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.plots.plotModelScores"><code class="name flex">
+<dt id="howiml.utils.plots.plotModelScores"><code class="name flex">
 <span>def <span class="ident">plotModelScores</span></span>(<span>plt, names, r2_train, r2_test, test=False)</span>
 </code></dt>
 <dd>
@@ -585,7 +583,7 @@ def plotTrainingSummary(trainingSummary):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.plots.plotTraining"><code class="name flex">
+<dt id="howiml.utils.plots.plotTraining"><code class="name flex">
 <span>def <span class="ident">plotTraining</span></span>(<span>history, plt)</span>
 </code></dt>
 <dd>
@@ -607,7 +605,7 @@ def plotTrainingSummary(trainingSummary):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.plots.plotTrainingSummary"><code class="name flex">
+<dt id="howiml.utils.plots.plotTrainingSummary"><code class="name flex">
 <span>def <span class="ident">plotTrainingSummary</span></span>(<span>trainingSummary)</span>
 </code></dt>
 <dd>
@@ -663,21 +661,21 @@ def plotTrainingSummary(trainingSummary):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="src.utils" href="index.html">src.utils</a></code></li>
+<li><code><a title="howiml.utils" href="index.html">howiml.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="src.utils.plots.duoPlot" href="#src.utils.plots.duoPlot">duoPlot</a></code></li>
-<li><code><a title="src.utils.plots.getPlotColors" href="#src.utils.plots.getPlotColors">getPlotColors</a></code></li>
-<li><code><a title="src.utils.plots.plotColumns" href="#src.utils.plots.plotColumns">plotColumns</a></code></li>
-<li><code><a title="src.utils.plots.plotData" href="#src.utils.plots.plotData">plotData</a></code></li>
-<li><code><a title="src.utils.plots.plotDataByTimeframe" href="#src.utils.plots.plotDataByTimeframe">plotDataByTimeframe</a></code></li>
-<li><code><a title="src.utils.plots.plotDataColumnSingle" href="#src.utils.plots.plotDataColumnSingle">plotDataColumnSingle</a></code></li>
-<li><code><a title="src.utils.plots.plotModelPredictions" href="#src.utils.plots.plotModelPredictions">plotModelPredictions</a></code></li>
-<li><code><a title="src.utils.plots.plotModelScores" href="#src.utils.plots.plotModelScores">plotModelScores</a></code></li>
-<li><code><a title="src.utils.plots.plotTraining" href="#src.utils.plots.plotTraining">plotTraining</a></code></li>
-<li><code><a title="src.utils.plots.plotTrainingSummary" href="#src.utils.plots.plotTrainingSummary">plotTrainingSummary</a></code></li>
+<li><code><a title="howiml.utils.plots.duoPlot" href="#howiml.utils.plots.duoPlot">duoPlot</a></code></li>
+<li><code><a title="howiml.utils.plots.getPlotColors" href="#howiml.utils.plots.getPlotColors">getPlotColors</a></code></li>
+<li><code><a title="howiml.utils.plots.plotColumns" href="#howiml.utils.plots.plotColumns">plotColumns</a></code></li>
+<li><code><a title="howiml.utils.plots.plotData" href="#howiml.utils.plots.plotData">plotData</a></code></li>
+<li><code><a title="howiml.utils.plots.plotDataByTimeframe" href="#howiml.utils.plots.plotDataByTimeframe">plotDataByTimeframe</a></code></li>
+<li><code><a title="howiml.utils.plots.plotDataColumnSingle" href="#howiml.utils.plots.plotDataColumnSingle">plotDataColumnSingle</a></code></li>
+<li><code><a title="howiml.utils.plots.plotModelPredictions" href="#howiml.utils.plots.plotModelPredictions">plotModelPredictions</a></code></li>
+<li><code><a title="howiml.utils.plots.plotModelScores" href="#howiml.utils.plots.plotModelScores">plotModelScores</a></code></li>
+<li><code><a title="howiml.utils.plots.plotTraining" href="#howiml.utils.plots.plotTraining">plotTraining</a></code></li>
+<li><code><a title="howiml.utils.plots.plotTrainingSummary" href="#howiml.utils.plots.plotTrainingSummary">plotTrainingSummary</a></code></li>
 </ul>
 </li>
 </ul>

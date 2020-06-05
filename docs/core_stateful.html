@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>src.core_stateless API documentation</title>
+<title>howiml.core_stateful API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,47 +17,57 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>src.core_stateless</code></h1>
+<h1 class="title">Module <code>howiml.core_stateful</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import sys
-import os
+<pre><code class="python">import matplotlib.pyplot as plt
 
-ROOT_PATH = os.path.abspath(&#34;.&#34;).split(&#34;src&#34;)[0]
-if ROOT_PATH not in sys.path:
-    sys.path.append(ROOT_PATH)
-module_path = os.path.abspath(os.path.join(ROOT_PATH+&#34;/src/utils/&#34;))
-if module_path not in sys.path:
-    sys.path.append(module_path)
-
-import matplotlib.pyplot as plt
-
-import utilities
-import metrics
-import models
-import modelFuncs
-import plots
-import prints
-import analysis
+from howiml.utils import utilities
+from howiml.utils import metrics
+from howiml.utils import models
+from howiml.utils import modelFuncs
+from howiml.utils import plots
+from howiml.utils import prints
+from howiml.utils import analysis
 
 import numpy as np
 import tensorflow as tf
-np.random.seed(100)
-tf.random.set_seed(100)
+
+_filename = None
+_names = None
+_descriptions = None
+_units = None
+_relevantColumns = None
+_columnDescriptions = None
+_columnUnits = None
+_columnNames = None
+_df = None
+_traintime = None
+_testtime = None
+_df_train = None
+_df_test = None
+_targetColumns = None
+_modelList = None
+_X_train = None
+_y_train = None
+_X_test = None
+_y_test = None
+_maxEnrolWindow = None
+_indexColumn = None
 
 _default_MLP_args = {
     &#39;activation&#39;: &#39;relu&#39;,
-    &#39;loss&#39;: &#39;mean_squared_error&#39;,
+    &#39;loss&#39;: &#39;mean_absolute_error&#39;,
     &#39;optimizer&#39;: &#39;adam&#39;,
-    &#39;metrics&#39;: [&#39;mean_squared_error&#39;],
-    &#39;epochs&#39;: 2000,
-    &#39;batchSize&#39;: 64,
+    &#39;metrics&#39;: [&#39;mean_absolute_error&#39;],
+    &#39;epochs&#39;: 500,
+    &#39;batchSize&#39;: 128*2,
     &#39;verbose&#39;: 1,
-    &#39;callbacks&#39;: modelFuncs.getBasicCallbacks(patience_es=300, patience_rlr=150),
+    &#39;callbacks&#39;: modelFuncs.getBasicCallbacks(patience_es=60, patience_rlr=40),
     &#39;enrolWindow&#39;: 0,
     &#39;validationSize&#39;: 0.2,
     &#39;testSize&#39;: 0.2,
@@ -65,14 +75,14 @@ _default_MLP_args = {
 
 _default_LSTM_args = {
     &#39;activation&#39;: &#39;tanh&#39;,
-    &#39;loss&#39;: &#39;mean_squared_error&#39;,
+    &#39;loss&#39;: &#39;mean_absolute_error&#39;,
     &#39;optimizer&#39;: &#39;adam&#39;,
-    &#39;metrics&#39;: [&#39;mean_squared_error&#39;],
+    &#39;metrics&#39;: [&#39;mean_absolute_error&#39;],
     &#39;epochs&#39;: 500,
-    &#39;batchSize&#39;: 128,
+    &#39;batchSize&#39;: 128*2,
     &#39;verbose&#39;: 1,
-    &#39;callbacks&#39;: modelFuncs.getBasicCallbacks(patience_es=75, patience_rlr=50),
-    &#39;enrolWindow&#39;: 32,
+    &#39;callbacks&#39;: modelFuncs.getBasicCallbacks(patience_es=60, patience_rlr=40),
+    &#39;enrolWindow&#39;: 12,
     &#39;validationSize&#39;: 0.2,
     &#39;testSize&#39;: 0.2,
 }
@@ -94,7 +104,8 @@ def initDataframe(filename, columns, irrelevantColumns):
         df: Pandas dataframe
             Dataframe generated from file and metadata
     &#34;&#34;&#34;
-    
+    global _filename, _relevantColumns, _columnDescriptions, _columnUnits, _columnNames, _df
+
     columnNames = list(map(lambda el: el[0], columns))
     descriptions = list(map(lambda el: el[1], columns))
     units = list(map(lambda el: el[2], columns))
@@ -103,22 +114,28 @@ def initDataframe(filename, columns, irrelevantColumns):
     columnUnits = dict(zip(columnNames, units))
     columnDescriptions = dict(zip(columnNames, descriptions))
 
+    _filename = filename
+    _relevantColumns = relevantColumns
+    _columnDescriptions = columnDescriptions
+    _columnUnits = columnUnits
+    _columnNames = columnNames
+    
     df = utilities.initDataframe(
         filename,
         relevantColumns,
         columnDescriptions,
     )
 
-    return [relevantColumns, columnDescriptions, columnUnits, columnNames, df]
+    _df = df
 
-def getTestTrainSplit(df, traintime, testtime):
+    return df
+
+def getTestTrainSplit(traintime, testtime):
     &#34;&#34;&#34;
     FUNCTION:
         Used to split training and testing rows into separate data frames
     
     PARAMS:
-        df: Pandas dataframe
-            e.g. as returned from the initDataframe method
         traintime: List of list of string pairs
             start and end times indicating periods used for training
         testtime: List of string pair
@@ -129,25 +146,66 @@ def getTestTrainSplit(df, traintime, testtime):
         List[df_train, df_test]: [Pandas dataframe, Pandas dataframe]
             Dataframes of training and testing dataset rows
     &#34;&#34;&#34;
+    global _traintime, _testtime, _df, _df_train, _df_test
+
+    _traintime = traintime
+    _testtime = testtime
 
     df_train, df_test = utilities.getTestTrainSplit(
-        df,
+        _df,
         traintime,
         testtime,
     )
 
+    _df_train = df_train
+    _df_test = df_test
+
     return [df_train, df_test]
 
-def getFeatureTargetSplit(df_train, df_test, targetColumns):
+def getFeatureTargetSplit(targetColumns):
     &#34;&#34;&#34;
     FUNCTION:
         Used to split feature and target columns into separate arrays
     
     PARAMS:
-        df_train: Pandas dataframe of training data
-            e.g. as returned from the getTestTrainSplit method
-        df_est: Pandas dataframe of testing data
-            e.g. as returned from the getTestTrainSplit method
+        targetColumns: List of strings
+            names of columns present in the dataset used as output(target) values
+    
+    RETURNS:
+        List[X_train, y_train, X_test, y_test]: [Numpy array, Numpy array, Numpy array, Numpy array]
+            Arrays of feature and target values for training and testing
+    &#34;&#34;&#34;
+    global _targetColumns, _X_train, _y_train, _X_test, _y_test
+
+    _targetColumns = targetColumns
+
+    X_train, y_train, X_test, y_test =  utilities.getFeatureTargetSplit(
+        _df_train,
+        _df_test,
+        targetColumns,
+    )
+
+    _X_train = X_train
+    _y_train = y_train
+    _X_test = X_test
+    _y_test = y_test
+
+    return [X_train, y_train, X_test, y_test]
+
+def prepareDataframe(df, traintime, testtime, targetColumns):
+    &#34;&#34;&#34;
+    FUNCTION:
+        Combination of getTestTrainingSplit and getFeatureTargetSplit
+        Used for even higher level programs where df_train and df_test are not needed
+    
+    PARAMS:
+        df: Pandas dataframe
+            dataframe generated from provided metadata
+        traintime: List of list of string pairs
+            start and end times indicating periods used for training
+        testtime: List of string pair
+            start and end time indicating period used for testing
+            preferably the entire period of the dataset
         targetColumns: List of strings
             names of columns present in the dataset used as output(target) values
     
@@ -156,15 +214,19 @@ def getFeatureTargetSplit(df_train, df_test, targetColumns):
             Arrays of feature and target values for training and testing
     &#34;&#34;&#34;
 
-    X_train, y_train, X_test, y_test =  utilities.getFeatureTargetSplit(
+    df_train, df_test = getTestTrainSplit(
+        df,
+        traintime,
+        testtime,
+    )
+
+    return getFeatureTargetSplit(
         df_train,
         df_test,
         targetColumns,
     )
 
-    return [X_train, y_train, X_test, y_test]
-
-def initModels(modelList, df_test):
+def initModels(modelList):
     &#34;&#34;&#34;
     FUNCTION:
         Used to initiate the provided models by calculating required model parameters
@@ -172,84 +234,73 @@ def initModels(modelList, df_test):
     PARAMS:
         modelList: list of MachineLearningModel/EnsembleModel objects
             The models used to make predictions
-        df_test: Pandas dataframe
-            e.g. as returned from the getTestTrainSplit method
     
     RETURNS:
         None
     &#34;&#34;&#34;
+    global _maxEnrolWindow, _indexColumn, _modelList, _df_test
 
-    maxEnrolWindow = utilities.findMaxEnrolWindow(modelList)
-    indexColumn = df_test.iloc[maxEnrolWindow:].index
+    _maxEnrolWindow = utilities.findMaxEnrolWindow(modelList)
+    _indexColumn = _df_test.iloc[_maxEnrolWindow:].index
+    _modelList = modelList
 
-    return [maxEnrolWindow, indexColumn]
-
-def trainModels(modelList, filename, targetColumns, retrain=False):
+def trainModels(retrain=False):
     &#34;&#34;&#34;
     FUNCTION:
         Used to train the models previously provided in the initModels method
     
     PARAMS:
-        modelList: list of MachineLearningModel/EnsembleModel objects
-            The models used to make predictions
-        filename: str
-            location of dataset file on disk in .csv format
-        targetColumns: List of strings
-            names of columns present in the dataset used as output(target) values
-            Same as for the getFeatureTargetSplit method
         retrain: boolean
             Indicates if the program should prefer to load existing models where possible
     
     RETURNS:
         None
     &#34;&#34;&#34;
+    global _modelList, _filename, _targetColumns
 
     modelFuncs.trainModels(
-        modelList,
-        filename,
-        targetColumns,
+        _modelList,
+        _filename,
+        _targetColumns,
         retrain
     )
 
-def predictWithModels(
-        modelList,
-        X_train,
-        y_train,
-        X_test,
-        y_test,
-        targetColumns,
-        indexColumn,
-        columnDescriptions,
-        columnUnits,
-        traintime,
-        plot=True,
-        interpol=False,
-        score=True,
-    ):
+def predictWithModelsUsingDropout(numberOfPredictions=20):
+    &#34;&#34;&#34;
+    FUNCTION:
+        Used to make predictions with RNN models using dropout
+        at predict time. Requires that the provided models
+        have training=True, otherwise mean and std will be zero
+    
+    PARAMS:
+        numberOfPredictions: int
+            How many predictions to average in the result
+    
+    RETURNS:
+        List[predictions, means, standarddevs]: [list(float), list(float), list(float)]
+            Lists containing the predicted values and their means and stds
+    &#34;&#34;&#34;
+    global _modelList, _X_test, _y_test
+
+    return utilities.predictMultipleWithModels(
+        _modelList,
+        _X_test,
+        _y_test,
+        numberOfPredictions,
+    )
+
+def predictWithModels(plot=True, interpol=False, score=True):
     &#34;&#34;&#34;
     FUNCTION:
         Used to make predictions using previously defined models
     
     PARAMS:
-        modelList: list of MachineLearningModel/EnsembleModel objects
-            The models used to make predictions
-        X_train, y_train, X_test, y_test: Numpy arrays
-            e.g. as returned by the getFeatureTarget method
-        targetColumns: List of strings
-            names of columns present in the dataset used as output(target) values
-            Same as for the getFeatureTargetSplit method
-        indexColumn: Pandas index column
-            e.g. as returned by the initModels method
-        columnDescriptions: Dict of (str, str)
-            e.g. as returned bu the initDataframe method
-        columnUnits: Dict of (str, str)
-            e.g. as returned bu the initDataframe method
-        traintime: list of list of strings
-            defined by the user
         plot: boolean
             Indicates if plots of the calculated predictions are desired
         interpol: boolean
             Indicates if interpolated functions for predictions should be plotted
+        score : boolean
+            Indicates if scores should be printed
     
     RETURNS:
         List[modelNames, metrics_train, metrics_test, columnsList, deviationsList]:
@@ -257,14 +308,15 @@ def predictWithModels(
             Lists containing the names and train/test scores of the provided models,
             as well as the actual predictions wrapped in objects used for printing
     &#34;&#34;&#34;
-    
+    global _modelList, _X_train, _y_train, _X_test, _y_test, _targetColumns, _indexColumn, _columnDescriptions, _columnUnits, _traintime
+
     modelNames, metrics_train, metrics_test, deviationsList, columnsList = utilities.predictWithModels(
-        modelList,
-        X_train,
-        y_train,
-        X_test,
-        y_test,
-        targetColumns 
+        _modelList,
+        _X_train,
+        _y_train,
+        _X_test,
+        _y_test,
+        _targetColumns 
     )
 
     if score:
@@ -278,10 +330,10 @@ def predictWithModels(
             plt,
             deviationsList,
             columnsList,
-            indexColumn,
-            columnDescriptions,
-            columnUnits,
-            traintime,
+            _indexColumn,
+            _columnDescriptions,
+            _columnUnits,
+            _traintime,
             interpol=interpol,
         )
     if score:
@@ -294,10 +346,28 @@ def predictWithModels(
 
     return [modelNames, metrics_train, metrics_test, columnsList, deviationsList]
 
+def predictWithAutoencoderModels():
+    &#34;&#34;&#34;
+    FUNCTION:
+        Used to make predictions in the case where all
+        models in self.modelList are of type AutoencoderModel
+    
+    PARAMS:
+        None
+    
+    RETURNS:
+        None
+    &#34;&#34;&#34;
+    global _modelList, _df_test, _X_test
+
+    utilities.predictWithAutoencoderModels(
+        _modelList,
+        _df_test,
+        _X_test
+    )
+
 def MLP(
         name,
-        X_train,
-        y_train,
         layers=[128],
         dropout=None,
         l1_rate=0.0,
@@ -320,10 +390,6 @@ def MLP(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         layers: list of integers
             List of neuron size for each layer
         dropout: float
@@ -337,7 +403,7 @@ def MLP(
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
-    global _default_MLP_args
+    global _X_train, _y_train, _default_MLP_args
 
     mlpLayers = []
     for layerSize in layers:
@@ -346,8 +412,8 @@ def MLP(
     model = models.kerasMLP(
         params = {
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
             &#39;args&#39;: {
                 &#39;activation&#39;: activation,
                 &#39;loss&#39;: loss,
@@ -372,8 +438,6 @@ def MLP(
 
 def LSTM(
     name,
-    X_train,
-    y_train,
     layers=[128],
     dropout=0.0,
     recurrentDropout=0.0,
@@ -400,10 +464,6 @@ def LSTM(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         layers: list of integers
             List of neuron size for each layer
         dropout: float
@@ -421,13 +481,13 @@ def LSTM(
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
-    global _default_LSTM_args
+    global _X_train, _y_train, _default_LSTM_args
 
     model = models.kerasLSTM(
         params = {
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
             &#39;args&#39;: {
                 &#39;activation&#39;: activation,
                 &#39;loss&#39;: loss,
@@ -453,8 +513,6 @@ def LSTM(
 
 def GRU(
     name,
-    X_train,
-    y_train,
     layers=[128],
     dropout=0.0,
     recurrentDropout=0.0,
@@ -481,10 +539,6 @@ def GRU(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         layers: list of integers
             List of neuron size for each layer
         dropout: float
@@ -502,13 +556,13 @@ def GRU(
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
-    global _default_LSTM_args
+    global _X_train, _y_train, _default_LSTM_args
 
     model = models.kerasGRU(
         params = {
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
             &#39;args&#39;: {
                 &#39;activation&#39;: activation,
                 &#39;loss&#39;: loss,
@@ -534,8 +588,6 @@ def GRU(
 
 def Linear(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -544,21 +596,18 @@ def Linear(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnLinear(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
@@ -566,8 +615,8 @@ def Linear(
 
 def Linear_Regularized(
     name,
-    X_train,
-    y_train,
+    alphas=(0.1, 1.0, 10.0),
+    folds=10,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -577,30 +626,31 @@ def Linear_Regularized(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
+        alphas: tuple of floats
+            Set of regluarization strenght parameters to try
+        folds: int
+            Number of cross validation folds
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnRidgeCV(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
+        alphas = alphas,
+        folds = folds,
     )
 
     return model
 
 def ElasticNet(
     name,
-    X_train,
-    y_train,
     alphas=(0.1, 1.0, 10.0),
     l1_ratio=0.5,
     ):
@@ -611,10 +661,6 @@ def ElasticNet(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         alphas: tuple of floats
             Set of regluarization strenght parameters to try
         l1_ratio: float
@@ -624,12 +670,13 @@ def ElasticNet(
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnElasticNetCV(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
         alphas = alphas,
         l1_ratio = l1_ratio,
@@ -639,8 +686,6 @@ def ElasticNet(
 
 def DecisionTree(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -649,21 +694,18 @@ def DecisionTree(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnDecisionTree(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
@@ -671,8 +713,6 @@ def DecisionTree(
 
 def RandomForest(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -681,21 +721,18 @@ def RandomForest(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnRandomForest(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
@@ -703,8 +740,6 @@ def RandomForest(
 
 def BaggingRegressor(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -714,21 +749,18 @@ def BaggingRegressor(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnBagging(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
@@ -736,8 +768,6 @@ def BaggingRegressor(
 
 def AdaBoostRegressor(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -747,21 +777,18 @@ def AdaBoostRegressor(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnAdaBoost(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
@@ -769,8 +796,6 @@ def AdaBoostRegressor(
 
 def SupportVectorMachine(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -779,32 +804,24 @@ def SupportVectorMachine(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnSVM(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
     return model
 
-def Ensemble(
-    name,
-    X_train,
-    y_train,
-    modelList,
-    ):
+def Ensemble(name, modelList):
     &#34;&#34;&#34;
     FUNCTION:
         Used to create an Ensemble model, combining the prediction
@@ -813,10 +830,6 @@ def Ensemble(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         modelList: list of MachineLearningModel objects
             A list of machine learning models used to construct the Ensemble model
     
@@ -824,17 +837,174 @@ def Ensemble(
         model: EnsembleModel
             Ensemble model object which behaves the same as any other MachineLearningModel
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.ensembleModel(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
         models=modelList,
     )
 
     return model
+
+def Autoencoder_Regularized(
+        name,
+        l1_rate=10e-4,
+        encodingDim=3,
+        activation=_default_MLP_args[&#39;activation&#39;],
+        loss=_default_MLP_args[&#39;loss&#39;],
+        optimizer=_default_MLP_args[&#39;optimizer&#39;],
+        metrics=_default_MLP_args[&#39;metrics&#39;],
+        epochs=_default_MLP_args[&#39;epochs&#39;],
+        batchSize=_default_MLP_args[&#39;batchSize&#39;],
+        verbose=_default_MLP_args[&#39;verbose&#39;],
+        validationSize=_default_MLP_args[&#39;validationSize&#39;],
+        testSize=_default_MLP_args[&#39;testSize&#39;],
+        callbacks=_default_MLP_args[&#39;callbacks&#39;],
+    ):
+    &#34;&#34;&#34;
+    FUNCTION:
+        Used to create an Autoencoder model using multilayer perceptron
+        and reguarlization by Lasso regluarization
+        NB: Autoencoder models SHOULD NOT and CAN NOT
+            be used together with other models, or
+            as submodels to Ensemble models
+    
+    PARAMS:
+        name: str
+            A name/alias given to the model by the user
+        l1_rate: float
+            Level of L1 regularization
+        encodingDim: int
+            Size of autoencoder middle layer
+    
+    RETURNS:
+        model: AutoencoderModel
+            Object with typical machine learning methods like train, predict etc.
+    &#34;&#34;&#34;
+    global _X_train, _default_MLP_args
+
+    model = models.autoencoder_Regularized(
+        params = {
+            &#39;name&#39;: name,
+            &#39;X_train&#39;: _X_train,
+            &#39;args&#39;: {
+                &#39;activation&#39;: activation,
+                &#39;loss&#39;: loss,
+                &#39;optimizer&#39;: optimizer,
+                &#39;metrics&#39;: metrics,
+                &#39;epochs&#39;: epochs,
+                &#39;batchSize&#39;: batchSize,
+                &#39;verbose&#39;: verbose,
+                &#39;callbacks&#39;: callbacks,
+                &#39;enrolWindow&#39;: 0,
+                &#39;validationSize&#39;: validationSize,
+                &#39;testSize&#39;: testSize,
+            },
+        },
+        l1_rate=l1_rate,
+        encodingDim=encodingDim,
+    )
+    
+    return model
+
+def Autoencoder_Dropout(
+        name,
+        dropout=0.0,
+        encodingDim=3,
+        activation=_default_MLP_args[&#39;activation&#39;],
+        loss=_default_MLP_args[&#39;loss&#39;],
+        optimizer=_default_MLP_args[&#39;optimizer&#39;],
+        metrics=_default_MLP_args[&#39;metrics&#39;],
+        epochs=_default_MLP_args[&#39;epochs&#39;],
+        batchSize=_default_MLP_args[&#39;batchSize&#39;],
+        verbose=_default_MLP_args[&#39;verbose&#39;],
+        validationSize=_default_MLP_args[&#39;validationSize&#39;],
+        testSize=_default_MLP_args[&#39;testSize&#39;],
+        callbacks=_default_MLP_args[&#39;callbacks&#39;],
+    ):
+    &#34;&#34;&#34;
+    FUNCTION:
+        Used to create an Autoencoder model using multilayer perceptron
+        and reguarlization by Lasso regluarization
+        NB: Autoencoder models SHOULD NOT and CAN NOT
+            be used together with other models, or
+            as submodels to Ensemble models
+    
+    PARAMS:
+        name: str
+            A name/alias given to the model by the user
+        dropout: float
+            Level of dropout
+        encodingDim: int
+            Size of autoencoder middle layer
+    
+    RETURNS:
+        model: AutoencoderModel
+            Object with typical machine learning methods like train, predict etc.
+    &#34;&#34;&#34;
+    global _X_train, _default_MLP_args
+
+    model = models.autoencoder_Dropout(
+        params = {
+            &#39;name&#39;: name,
+            &#39;X_train&#39;: _X_train,
+            &#39;args&#39;: {
+                &#39;activation&#39;: activation,
+                &#39;loss&#39;: loss,
+                &#39;optimizer&#39;: optimizer,
+                &#39;metrics&#39;: metrics,
+                &#39;epochs&#39;: epochs,
+                &#39;batchSize&#39;: batchSize,
+                &#39;verbose&#39;: verbose,
+                &#39;callbacks&#39;: callbacks,
+                &#39;enrolWindow&#39;: 0,
+                &#39;validationSize&#39;: validationSize,
+                &#39;testSize&#39;: testSize,
+            },
+        },
+        dropout=dropout,
+        encodingDim=encodingDim,
+    )
+    
+    return model
+
+def reset():
+    &#34;&#34;&#34;
+    FUNCTION:
+        Resets the state of the module
+    
+    PARAMS:
+        None
+
+    RETURNS:
+        None
+    &#34;&#34;&#34;
+    global _filename, _names, _descriptions, _units, _relevantColumns, _columnDescriptions, _columnUnits, _columnNames, _df, _traintime, _testtime, _df_train, _df_test, _targetColumns, _modelList, _X_train, _y_train, _X_test, _y_test, _maxEnrolWindow, _indexColumn
+    _filename = None
+    _names = None
+    _descriptions = None
+    _units = None
+    _relevantColumns = None
+    _columnDescriptions = None
+    _columnUnits = None
+    _columnNames = None
+    _df = None
+    _traintime = None
+    _testtime = None
+    _df_train = None
+    _df_test = None
+    _targetColumns = None
+    _modelList = None
+    _X_train = None
+    _y_train = None
+    _X_test = None
+    _y_test = None
+    _maxEnrolWindow = None
+    _indexColumn = None
 
 def getCallbacks(patience_es, patience_rlr):
     &#34;&#34;&#34;
@@ -915,8 +1085,8 @@ def correlationDuoPlot(df1, df2, title1=&#34;Correlation plot 1&#34;, title2=&#3
 def correlationDifferencePlot(df1, df2, title=&#34;Correlation difference plot&#34;):
     return analysis.correlationDifferencePlot(df1, df2, title)
 
-def valueDistribution(df, traintime, testtime):
-    return analysis.valueDistribution(df, traintime, testtime)
+def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
+    return analysis.valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits)
 
 def printCorrelationMatrix(covmat, df, columnNames=None):
     return prints.printCorrelationMatrix(covmat, df, columnNames)
@@ -932,8 +1102,8 @@ def printExplainedVarianceRatio(pca):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="src.core_stateless.AdaBoostRegressor"><code class="name flex">
-<span>def <span class="ident">AdaBoostRegressor</span></span>(<span>name, X_train, y_train)</span>
+<dt id="howiml.core_stateful.AdaBoostRegressor"><code class="name flex">
+<span>def <span class="ident">AdaBoostRegressor</span></span>(<span>name)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
@@ -941,11 +1111,7 @@ def printExplainedVarianceRatio(pca):
 copies with different weights according to previous predictions</p>
 <h2 id="params">Params</h2>
 <p>name: str
-A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets</p>
+A name/alias given to the model by the user</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>model</code></dt>
@@ -958,8 +1124,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def AdaBoostRegressor(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -969,29 +1133,204 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnAdaBoost(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.BaggingRegressor"><code class="name flex">
-<span>def <span class="ident">BaggingRegressor</span></span>(<span>name, X_train, y_train)</span>
+<dt id="howiml.core_stateful.Autoencoder_Dropout"><code class="name flex">
+<span>def <span class="ident">Autoencoder_Dropout</span></span>(<span>name, dropout=0.0, encodingDim=3, activation='relu', loss='mean_absolute_error', optimizer='adam', metrics=['mean_absolute_error'], epochs=500, batchSize=256, verbose=1, validationSize=0.2, testSize=0.2, callbacks=[&lt;keras.callbacks.callbacks.EarlyStopping object&gt;, &lt;keras.callbacks.callbacks.ReduceLROnPlateau object&gt;])</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="function">Function</h2>
+<p>Used to create an Autoencoder model using multilayer perceptron
+and reguarlization by Lasso regluarization
+NB: Autoencoder models SHOULD NOT and CAN NOT
+be used together with other models, or
+as submodels to Ensemble models</p>
+<h2 id="params">Params</h2>
+<p>name: str
+A name/alias given to the model by the user
+dropout: float
+Level of dropout
+encodingDim: int
+Size of autoencoder middle layer</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>model</code></dt>
+<dd>AutoencoderModel
+Object with typical machine learning methods like train, predict etc.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def Autoencoder_Dropout(
+        name,
+        dropout=0.0,
+        encodingDim=3,
+        activation=_default_MLP_args[&#39;activation&#39;],
+        loss=_default_MLP_args[&#39;loss&#39;],
+        optimizer=_default_MLP_args[&#39;optimizer&#39;],
+        metrics=_default_MLP_args[&#39;metrics&#39;],
+        epochs=_default_MLP_args[&#39;epochs&#39;],
+        batchSize=_default_MLP_args[&#39;batchSize&#39;],
+        verbose=_default_MLP_args[&#39;verbose&#39;],
+        validationSize=_default_MLP_args[&#39;validationSize&#39;],
+        testSize=_default_MLP_args[&#39;testSize&#39;],
+        callbacks=_default_MLP_args[&#39;callbacks&#39;],
+    ):
+    &#34;&#34;&#34;
+    FUNCTION:
+        Used to create an Autoencoder model using multilayer perceptron
+        and reguarlization by Lasso regluarization
+        NB: Autoencoder models SHOULD NOT and CAN NOT
+            be used together with other models, or
+            as submodels to Ensemble models
+    
+    PARAMS:
+        name: str
+            A name/alias given to the model by the user
+        dropout: float
+            Level of dropout
+        encodingDim: int
+            Size of autoencoder middle layer
+    
+    RETURNS:
+        model: AutoencoderModel
+            Object with typical machine learning methods like train, predict etc.
+    &#34;&#34;&#34;
+    global _X_train, _default_MLP_args
+
+    model = models.autoencoder_Dropout(
+        params = {
+            &#39;name&#39;: name,
+            &#39;X_train&#39;: _X_train,
+            &#39;args&#39;: {
+                &#39;activation&#39;: activation,
+                &#39;loss&#39;: loss,
+                &#39;optimizer&#39;: optimizer,
+                &#39;metrics&#39;: metrics,
+                &#39;epochs&#39;: epochs,
+                &#39;batchSize&#39;: batchSize,
+                &#39;verbose&#39;: verbose,
+                &#39;callbacks&#39;: callbacks,
+                &#39;enrolWindow&#39;: 0,
+                &#39;validationSize&#39;: validationSize,
+                &#39;testSize&#39;: testSize,
+            },
+        },
+        dropout=dropout,
+        encodingDim=encodingDim,
+    )
+    
+    return model</code></pre>
+</details>
+</dd>
+<dt id="howiml.core_stateful.Autoencoder_Regularized"><code class="name flex">
+<span>def <span class="ident">Autoencoder_Regularized</span></span>(<span>name, l1_rate=0.001, encodingDim=3, activation='relu', loss='mean_absolute_error', optimizer='adam', metrics=['mean_absolute_error'], epochs=500, batchSize=256, verbose=1, validationSize=0.2, testSize=0.2, callbacks=[&lt;keras.callbacks.callbacks.EarlyStopping object&gt;, &lt;keras.callbacks.callbacks.ReduceLROnPlateau object&gt;])</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="function">Function</h2>
+<p>Used to create an Autoencoder model using multilayer perceptron
+and reguarlization by Lasso regluarization
+NB: Autoencoder models SHOULD NOT and CAN NOT
+be used together with other models, or
+as submodels to Ensemble models</p>
+<h2 id="params">Params</h2>
+<p>name: str
+A name/alias given to the model by the user
+l1_rate: float
+Level of L1 regularization
+encodingDim: int
+Size of autoencoder middle layer</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>model</code></dt>
+<dd>AutoencoderModel
+Object with typical machine learning methods like train, predict etc.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def Autoencoder_Regularized(
+        name,
+        l1_rate=10e-4,
+        encodingDim=3,
+        activation=_default_MLP_args[&#39;activation&#39;],
+        loss=_default_MLP_args[&#39;loss&#39;],
+        optimizer=_default_MLP_args[&#39;optimizer&#39;],
+        metrics=_default_MLP_args[&#39;metrics&#39;],
+        epochs=_default_MLP_args[&#39;epochs&#39;],
+        batchSize=_default_MLP_args[&#39;batchSize&#39;],
+        verbose=_default_MLP_args[&#39;verbose&#39;],
+        validationSize=_default_MLP_args[&#39;validationSize&#39;],
+        testSize=_default_MLP_args[&#39;testSize&#39;],
+        callbacks=_default_MLP_args[&#39;callbacks&#39;],
+    ):
+    &#34;&#34;&#34;
+    FUNCTION:
+        Used to create an Autoencoder model using multilayer perceptron
+        and reguarlization by Lasso regluarization
+        NB: Autoencoder models SHOULD NOT and CAN NOT
+            be used together with other models, or
+            as submodels to Ensemble models
+    
+    PARAMS:
+        name: str
+            A name/alias given to the model by the user
+        l1_rate: float
+            Level of L1 regularization
+        encodingDim: int
+            Size of autoencoder middle layer
+    
+    RETURNS:
+        model: AutoencoderModel
+            Object with typical machine learning methods like train, predict etc.
+    &#34;&#34;&#34;
+    global _X_train, _default_MLP_args
+
+    model = models.autoencoder_Regularized(
+        params = {
+            &#39;name&#39;: name,
+            &#39;X_train&#39;: _X_train,
+            &#39;args&#39;: {
+                &#39;activation&#39;: activation,
+                &#39;loss&#39;: loss,
+                &#39;optimizer&#39;: optimizer,
+                &#39;metrics&#39;: metrics,
+                &#39;epochs&#39;: epochs,
+                &#39;batchSize&#39;: batchSize,
+                &#39;verbose&#39;: verbose,
+                &#39;callbacks&#39;: callbacks,
+                &#39;enrolWindow&#39;: 0,
+                &#39;validationSize&#39;: validationSize,
+                &#39;testSize&#39;: testSize,
+            },
+        },
+        l1_rate=l1_rate,
+        encodingDim=encodingDim,
+    )
+    
+    return model</code></pre>
+</details>
+</dd>
+<dt id="howiml.core_stateful.BaggingRegressor"><code class="name flex">
+<span>def <span class="ident">BaggingRegressor</span></span>(<span>name)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
@@ -999,11 +1338,7 @@ Object with typical machine learning methods like train, predict etc.</dd>
 a achieve a final prediction</p>
 <h2 id="params">Params</h2>
 <p>name: str
-A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets</p>
+A name/alias given to the model by the user</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>model</code></dt>
@@ -1016,8 +1351,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def BaggingRegressor(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -1027,40 +1360,33 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnBagging(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.DecisionTree"><code class="name flex">
-<span>def <span class="ident">DecisionTree</span></span>(<span>name, X_train, y_train)</span>
+<dt id="howiml.core_stateful.DecisionTree"><code class="name flex">
+<span>def <span class="ident">DecisionTree</span></span>(<span>name)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
 <p>Used to create a decision tree regressor</p>
 <h2 id="params">Params</h2>
 <p>name: str
-A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets</p>
+A name/alias given to the model by the user</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>model</code></dt>
@@ -1073,8 +1399,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def DecisionTree(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -1083,29 +1407,26 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnDecisionTree(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.ElasticNet"><code class="name flex">
-<span>def <span class="ident">ElasticNet</span></span>(<span>name, X_train, y_train, alphas=(0.1, 1.0, 10.0), l1_ratio=0.5)</span>
+<dt id="howiml.core_stateful.ElasticNet"><code class="name flex">
+<span>def <span class="ident">ElasticNet</span></span>(<span>name, alphas=(0.1, 1.0, 10.0), l1_ratio=0.5)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
@@ -1113,10 +1434,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 <h2 id="params">Params</h2>
 <p>name: str
 A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets
 alphas: tuple of floats
 Set of regluarization strenght parameters to try
 l1_ratio: float
@@ -1133,8 +1450,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def ElasticNet(
     name,
-    X_train,
-    y_train,
     alphas=(0.1, 1.0, 10.0),
     l1_ratio=0.5,
     ):
@@ -1145,10 +1460,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         alphas: tuple of floats
             Set of regluarization strenght parameters to try
         l1_ratio: float
@@ -1158,12 +1469,13 @@ Object with typical machine learning methods like train, predict etc.</dd>
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnElasticNetCV(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
         alphas = alphas,
         l1_ratio = l1_ratio,
@@ -1172,8 +1484,8 @@ Object with typical machine learning methods like train, predict etc.</dd>
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.Ensemble"><code class="name flex">
-<span>def <span class="ident">Ensemble</span></span>(<span>name, X_train, y_train, modelList)</span>
+<dt id="howiml.core_stateful.Ensemble"><code class="name flex">
+<span>def <span class="ident">Ensemble</span></span>(<span>name, modelList)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
@@ -1182,10 +1494,6 @@ of n&gt;1 machine learning methods using a linear regressor</p>
 <h2 id="params">Params</h2>
 <p>name: str
 A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets
 modelList: list of MachineLearningModel objects
 A list of machine learning models used to construct the Ensemble model</p>
 <h2 id="returns">Returns</h2>
@@ -1198,12 +1506,7 @@ Ensemble model object which behaves the same as any other MachineLearningModel</
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def Ensemble(
-    name,
-    X_train,
-    y_train,
-    modelList,
-    ):
+<pre><code class="python">def Ensemble(name, modelList):
     &#34;&#34;&#34;
     FUNCTION:
         Used to create an Ensemble model, combining the prediction
@@ -1212,10 +1515,6 @@ Ensemble model object which behaves the same as any other MachineLearningModel</
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         modelList: list of MachineLearningModel objects
             A list of machine learning models used to construct the Ensemble model
     
@@ -1223,12 +1522,13 @@ Ensemble model object which behaves the same as any other MachineLearningModel</
         model: EnsembleModel
             Ensemble model object which behaves the same as any other MachineLearningModel
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.ensembleModel(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
         models=modelList,
     )
@@ -1236,8 +1536,8 @@ Ensemble model object which behaves the same as any other MachineLearningModel</
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.GRU"><code class="name flex">
-<span>def <span class="ident">GRU</span></span>(<span>name, X_train, y_train, layers=[128], dropout=0.0, recurrentDropout=0.0, alpha=None, training=False, enrolWindow=32, activation='tanh', loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error'], epochs=500, batchSize=128, verbose=1, validationSize=0.2, testSize=0.2, callbacks=[&lt;keras.callbacks.callbacks.EarlyStopping object&gt;, &lt;keras.callbacks.callbacks.ReduceLROnPlateau object&gt;])</span>
+<dt id="howiml.core_stateful.GRU"><code class="name flex">
+<span>def <span class="ident">GRU</span></span>(<span>name, layers=[128], dropout=0.0, recurrentDropout=0.0, alpha=None, training=False, enrolWindow=12, activation='tanh', loss='mean_absolute_error', optimizer='adam', metrics=['mean_absolute_error'], epochs=500, batchSize=256, verbose=1, validationSize=0.2, testSize=0.2, callbacks=[&lt;keras.callbacks.callbacks.EarlyStopping object&gt;, &lt;keras.callbacks.callbacks.ReduceLROnPlateau object&gt;])</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
@@ -1247,10 +1547,6 @@ traditional dropout as regularization method</p>
 <h2 id="params">Params</h2>
 <p>name: str
 A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets
 layers: list of integers
 List of neuron size for each layer
 dropout: float
@@ -1275,8 +1571,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def GRU(
     name,
-    X_train,
-    y_train,
     layers=[128],
     dropout=0.0,
     recurrentDropout=0.0,
@@ -1303,10 +1597,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         layers: list of integers
             List of neuron size for each layer
         dropout: float
@@ -1324,13 +1614,13 @@ Object with typical machine learning methods like train, predict etc.</dd>
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
-    global _default_LSTM_args
+    global _X_train, _y_train, _default_LSTM_args
 
     model = models.kerasGRU(
         params = {
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
             &#39;args&#39;: {
                 &#39;activation&#39;: activation,
                 &#39;loss&#39;: loss,
@@ -1355,8 +1645,8 @@ Object with typical machine learning methods like train, predict etc.</dd>
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.LSTM"><code class="name flex">
-<span>def <span class="ident">LSTM</span></span>(<span>name, X_train, y_train, layers=[128], dropout=0.0, recurrentDropout=0.0, alpha=None, training=False, enrolWindow=32, activation='tanh', loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error'], epochs=500, batchSize=128, verbose=1, validationSize=0.2, testSize=0.2, callbacks=[&lt;keras.callbacks.callbacks.EarlyStopping object&gt;, &lt;keras.callbacks.callbacks.ReduceLROnPlateau object&gt;])</span>
+<dt id="howiml.core_stateful.LSTM"><code class="name flex">
+<span>def <span class="ident">LSTM</span></span>(<span>name, layers=[128], dropout=0.0, recurrentDropout=0.0, alpha=None, training=False, enrolWindow=12, activation='tanh', loss='mean_absolute_error', optimizer='adam', metrics=['mean_absolute_error'], epochs=500, batchSize=256, verbose=1, validationSize=0.2, testSize=0.2, callbacks=[&lt;keras.callbacks.callbacks.EarlyStopping object&gt;, &lt;keras.callbacks.callbacks.ReduceLROnPlateau object&gt;])</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
@@ -1366,10 +1656,6 @@ traditional dropout as regularization method</p>
 <h2 id="params">Params</h2>
 <p>name: str
 A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets
 layers: list of integers
 List of neuron size for each layer
 dropout: float
@@ -1394,8 +1680,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def LSTM(
     name,
-    X_train,
-    y_train,
     layers=[128],
     dropout=0.0,
     recurrentDropout=0.0,
@@ -1422,10 +1706,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         layers: list of integers
             List of neuron size for each layer
         dropout: float
@@ -1443,13 +1723,13 @@ Object with typical machine learning methods like train, predict etc.</dd>
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
-    global _default_LSTM_args
+    global _X_train, _y_train, _default_LSTM_args
 
     model = models.kerasLSTM(
         params = {
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
             &#39;args&#39;: {
                 &#39;activation&#39;: activation,
                 &#39;loss&#39;: loss,
@@ -1474,19 +1754,15 @@ Object with typical machine learning methods like train, predict etc.</dd>
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.Linear"><code class="name flex">
-<span>def <span class="ident">Linear</span></span>(<span>name, X_train, y_train)</span>
+<dt id="howiml.core_stateful.Linear"><code class="name flex">
+<span>def <span class="ident">Linear</span></span>(<span>name)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
 <p>Used to create a Linear Machine Learning model</p>
 <h2 id="params">Params</h2>
 <p>name: str
-A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets</p>
+A name/alias given to the model by the user</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>model</code></dt>
@@ -1499,8 +1775,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def Linear(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -1509,29 +1783,26 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnLinear(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.Linear_Regularized"><code class="name flex">
-<span>def <span class="ident">Linear_Regularized</span></span>(<span>name, X_train, y_train)</span>
+<dt id="howiml.core_stateful.Linear_Regularized"><code class="name flex">
+<span>def <span class="ident">Linear_Regularized</span></span>(<span>name, alphas=(0.1, 1.0, 10.0), folds=10)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
@@ -1540,10 +1811,10 @@ regularization and cross validation</p>
 <h2 id="params">Params</h2>
 <p>name: str
 A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets</p>
+alphas: tuple of floats
+Set of regluarization strenght parameters to try
+folds: int
+Number of cross validation folds</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>model</code></dt>
@@ -1556,8 +1827,8 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def Linear_Regularized(
     name,
-    X_train,
-    y_train,
+    alphas=(0.1, 1.0, 10.0),
+    folds=10,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -1567,29 +1838,32 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
+        alphas: tuple of floats
+            Set of regluarization strenght parameters to try
+        folds: int
+            Number of cross validation folds
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnRidgeCV(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
+        alphas = alphas,
+        folds = folds,
     )
 
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.MLP"><code class="name flex">
-<span>def <span class="ident">MLP</span></span>(<span>name, X_train, y_train, layers=[128], dropout=None, l1_rate=0.0, l2_rate=0.0, activation='relu', loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error'], epochs=2000, batchSize=64, verbose=1, validationSize=0.2, testSize=0.2, callbacks=[&lt;keras.callbacks.callbacks.EarlyStopping object&gt;, &lt;keras.callbacks.callbacks.ReduceLROnPlateau object&gt;])</span>
+<dt id="howiml.core_stateful.MLP"><code class="name flex">
+<span>def <span class="ident">MLP</span></span>(<span>name, layers=[128], dropout=None, l1_rate=0.0, l2_rate=0.0, activation='relu', loss='mean_absolute_error', optimizer='adam', metrics=['mean_absolute_error'], epochs=500, batchSize=256, verbose=1, validationSize=0.2, testSize=0.2, callbacks=[&lt;keras.callbacks.callbacks.EarlyStopping object&gt;, &lt;keras.callbacks.callbacks.ReduceLROnPlateau object&gt;])</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
@@ -1597,10 +1871,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 <h2 id="params">Params</h2>
 <p>name: str
 A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets
 layers: list of integers
 List of neuron size for each layer
 dropout: float
@@ -1621,8 +1891,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def MLP(
         name,
-        X_train,
-        y_train,
         layers=[128],
         dropout=None,
         l1_rate=0.0,
@@ -1645,10 +1913,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         layers: list of integers
             List of neuron size for each layer
         dropout: float
@@ -1662,7 +1926,7 @@ Object with typical machine learning methods like train, predict etc.</dd>
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
-    global _default_MLP_args
+    global _X_train, _y_train, _default_MLP_args
 
     mlpLayers = []
     for layerSize in layers:
@@ -1671,8 +1935,8 @@ Object with typical machine learning methods like train, predict etc.</dd>
     model = models.kerasMLP(
         params = {
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
             &#39;args&#39;: {
                 &#39;activation&#39;: activation,
                 &#39;loss&#39;: loss,
@@ -1696,19 +1960,15 @@ Object with typical machine learning methods like train, predict etc.</dd>
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.RandomForest"><code class="name flex">
-<span>def <span class="ident">RandomForest</span></span>(<span>name, X_train, y_train)</span>
+<dt id="howiml.core_stateful.RandomForest"><code class="name flex">
+<span>def <span class="ident">RandomForest</span></span>(<span>name)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
 <p>Used to create a random forest (decision) tree regressor</p>
 <h2 id="params">Params</h2>
 <p>name: str
-A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets</p>
+A name/alias given to the model by the user</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>model</code></dt>
@@ -1721,8 +1981,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def RandomForest(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -1731,40 +1989,33 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnRandomForest(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.SupportVectorMachine"><code class="name flex">
-<span>def <span class="ident">SupportVectorMachine</span></span>(<span>name, X_train, y_train)</span>
+<dt id="howiml.core_stateful.SupportVectorMachine"><code class="name flex">
+<span>def <span class="ident">SupportVectorMachine</span></span>(<span>name)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
 <p>Used to create a Support Vector Machine regressor</p>
 <h2 id="params">Params</h2>
 <p>name: str
-A name/alias given to the model by the user
-X_train: Numpy array
-Values for the training features
-y_train: Numpy array
-Values for the training targets</p>
+A name/alias given to the model by the user</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>model</code></dt>
@@ -1777,8 +2028,6 @@ Object with typical machine learning methods like train, predict etc.</dd>
 </summary>
 <pre><code class="python">def SupportVectorMachine(
     name,
-    X_train,
-    y_train,
     ):
     &#34;&#34;&#34;
     FUNCTION:
@@ -1787,28 +2036,25 @@ Object with typical machine learning methods like train, predict etc.</dd>
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     &#34;&#34;&#34;
+    global _X_train, _y_train
 
     model = models.sklearnSVM(
         params={
             &#39;name&#39;: name,
-            &#39;X_train&#39;: X_train,
-            &#39;y_train&#39;: y_train,
+            &#39;X_train&#39;: _X_train,
+            &#39;y_train&#39;: _y_train,
         },
     )
 
     return model</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.correlationDifferencePlot"><code class="name flex">
+<dt id="howiml.core_stateful.correlationDifferencePlot"><code class="name flex">
 <span>def <span class="ident">correlationDifferencePlot</span></span>(<span>df1, df2, title='Correlation difference plot')</span>
 </code></dt>
 <dd>
@@ -1821,7 +2067,7 @@ Object with typical machine learning methods like train, predict etc.</dd>
     return analysis.correlationDifferencePlot(df1, df2, title)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.correlationDuoPlot"><code class="name flex">
+<dt id="howiml.core_stateful.correlationDuoPlot"><code class="name flex">
 <span>def <span class="ident">correlationDuoPlot</span></span>(<span>df1, df2, title1='Correlation plot 1', title2='Correlation plot 2')</span>
 </code></dt>
 <dd>
@@ -1834,7 +2080,7 @@ Object with typical machine learning methods like train, predict etc.</dd>
     return analysis.correlationDuoPlot(df1, df2, title1, title2)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.correlationMatrix"><code class="name flex">
+<dt id="howiml.core_stateful.correlationMatrix"><code class="name flex">
 <span>def <span class="ident">correlationMatrix</span></span>(<span>df)</span>
 </code></dt>
 <dd>
@@ -1847,7 +2093,7 @@ Object with typical machine learning methods like train, predict etc.</dd>
     return analysis.correlationMatrix(df)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.correlationPlot"><code class="name flex">
+<dt id="howiml.core_stateful.correlationPlot"><code class="name flex">
 <span>def <span class="ident">correlationPlot</span></span>(<span>df, title='Correlation plot')</span>
 </code></dt>
 <dd>
@@ -1860,7 +2106,7 @@ Object with typical machine learning methods like train, predict etc.</dd>
     return analysis.correlationPlot(df, title)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.getCallbacks"><code class="name flex">
+<dt id="howiml.core_stateful.getCallbacks"><code class="name flex">
 <span>def <span class="ident">getCallbacks</span></span>(<span>patience_es, patience_rlr)</span>
 </code></dt>
 <dd>
@@ -1897,18 +2143,14 @@ Number of iterations to wait before ReduceLearningRate is performed</p>
     return modelFuncs.getBasicCallbacks(patience_es=patience_es, patience_rlr=patience_rlr)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.getFeatureTargetSplit"><code class="name flex">
-<span>def <span class="ident">getFeatureTargetSplit</span></span>(<span>df_train, df_test, targetColumns)</span>
+<dt id="howiml.core_stateful.getFeatureTargetSplit"><code class="name flex">
+<span>def <span class="ident">getFeatureTargetSplit</span></span>(<span>targetColumns)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
 <p>Used to split feature and target columns into separate arrays</p>
 <h2 id="params">Params</h2>
-<p>df_train: Pandas dataframe of training data
-e.g. as returned from the getTestTrainSplit method
-df_est: Pandas dataframe of testing data
-e.g. as returned from the getTestTrainSplit method
-targetColumns: List of strings
+<p>targetColumns: List of strings
 names of columns present in the dataset used as output(target) values</p>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -1920,16 +2162,12 @@ Arrays of feature and target values for training and testing</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def getFeatureTargetSplit(df_train, df_test, targetColumns):
+<pre><code class="python">def getFeatureTargetSplit(targetColumns):
     &#34;&#34;&#34;
     FUNCTION:
         Used to split feature and target columns into separate arrays
     
     PARAMS:
-        df_train: Pandas dataframe of training data
-            e.g. as returned from the getTestTrainSplit method
-        df_est: Pandas dataframe of testing data
-            e.g. as returned from the getTestTrainSplit method
         targetColumns: List of strings
             names of columns present in the dataset used as output(target) values
     
@@ -1937,26 +2175,32 @@ Arrays of feature and target values for training and testing</dd>
         List[X_train, y_train, X_test, y_test]: [Numpy array, Numpy array, Numpy array, Numpy array]
             Arrays of feature and target values for training and testing
     &#34;&#34;&#34;
+    global _targetColumns, _X_train, _y_train, _X_test, _y_test
+
+    _targetColumns = targetColumns
 
     X_train, y_train, X_test, y_test =  utilities.getFeatureTargetSplit(
-        df_train,
-        df_test,
+        _df_train,
+        _df_test,
         targetColumns,
     )
+
+    _X_train = X_train
+    _y_train = y_train
+    _X_test = X_test
+    _y_test = y_test
 
     return [X_train, y_train, X_test, y_test]</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.getTestTrainSplit"><code class="name flex">
-<span>def <span class="ident">getTestTrainSplit</span></span>(<span>df, traintime, testtime)</span>
+<dt id="howiml.core_stateful.getTestTrainSplit"><code class="name flex">
+<span>def <span class="ident">getTestTrainSplit</span></span>(<span>traintime, testtime)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
 <p>Used to split training and testing rows into separate data frames</p>
 <h2 id="params">Params</h2>
-<p>df: Pandas dataframe
-e.g. as returned from the initDataframe method
-traintime: List of list of string pairs
+<p>traintime: List of list of string pairs
 start and end times indicating periods used for training
 testtime: List of string pair
 start and end time indicating period used for testing
@@ -1971,14 +2215,12 @@ Dataframes of training and testing dataset rows</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def getTestTrainSplit(df, traintime, testtime):
+<pre><code class="python">def getTestTrainSplit(traintime, testtime):
     &#34;&#34;&#34;
     FUNCTION:
         Used to split training and testing rows into separate data frames
     
     PARAMS:
-        df: Pandas dataframe
-            e.g. as returned from the initDataframe method
         traintime: List of list of string pairs
             start and end times indicating periods used for training
         testtime: List of string pair
@@ -1989,17 +2231,24 @@ Dataframes of training and testing dataset rows</dd>
         List[df_train, df_test]: [Pandas dataframe, Pandas dataframe]
             Dataframes of training and testing dataset rows
     &#34;&#34;&#34;
+    global _traintime, _testtime, _df, _df_train, _df_test
+
+    _traintime = traintime
+    _testtime = testtime
 
     df_train, df_test = utilities.getTestTrainSplit(
-        df,
+        _df,
         traintime,
         testtime,
     )
 
+    _df_train = df_train
+    _df_test = df_test
+
     return [df_train, df_test]</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.initDataframe"><code class="name flex">
+<dt id="howiml.core_stateful.initDataframe"><code class="name flex">
 <span>def <span class="ident">initDataframe</span></span>(<span>filename, columns, irrelevantColumns)</span>
 </code></dt>
 <dd>
@@ -2039,7 +2288,8 @@ Dataframe generated from file and metadata</dd>
         df: Pandas dataframe
             Dataframe generated from file and metadata
     &#34;&#34;&#34;
-    
+    global _filename, _relevantColumns, _columnDescriptions, _columnUnits, _columnNames, _df
+
     columnNames = list(map(lambda el: el[0], columns))
     descriptions = list(map(lambda el: el[1], columns))
     units = list(map(lambda el: el[2], columns))
@@ -2048,26 +2298,32 @@ Dataframe generated from file and metadata</dd>
     columnUnits = dict(zip(columnNames, units))
     columnDescriptions = dict(zip(columnNames, descriptions))
 
+    _filename = filename
+    _relevantColumns = relevantColumns
+    _columnDescriptions = columnDescriptions
+    _columnUnits = columnUnits
+    _columnNames = columnNames
+    
     df = utilities.initDataframe(
         filename,
         relevantColumns,
         columnDescriptions,
     )
 
-    return [relevantColumns, columnDescriptions, columnUnits, columnNames, df]</code></pre>
+    _df = df
+
+    return df</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.initModels"><code class="name flex">
-<span>def <span class="ident">initModels</span></span>(<span>modelList, df_test)</span>
+<dt id="howiml.core_stateful.initModels"><code class="name flex">
+<span>def <span class="ident">initModels</span></span>(<span>modelList)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
 <p>Used to initiate the provided models by calculating required model parameters</p>
 <h2 id="params">Params</h2>
 <p>modelList: list of MachineLearningModel/EnsembleModel objects
-The models used to make predictions
-df_test: Pandas dataframe
-e.g. as returned from the getTestTrainSplit method</p>
+The models used to make predictions</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>None</code></dt>
@@ -2077,7 +2333,7 @@ e.g. as returned from the getTestTrainSplit method</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def initModels(modelList, df_test):
+<pre><code class="python">def initModels(modelList):
     &#34;&#34;&#34;
     FUNCTION:
         Used to initiate the provided models by calculating required model parameters
@@ -2085,20 +2341,18 @@ e.g. as returned from the getTestTrainSplit method</p>
     PARAMS:
         modelList: list of MachineLearningModel/EnsembleModel objects
             The models used to make predictions
-        df_test: Pandas dataframe
-            e.g. as returned from the getTestTrainSplit method
     
     RETURNS:
         None
     &#34;&#34;&#34;
+    global _maxEnrolWindow, _indexColumn, _modelList, _df_test
 
-    maxEnrolWindow = utilities.findMaxEnrolWindow(modelList)
-    indexColumn = df_test.iloc[maxEnrolWindow:].index
-
-    return [maxEnrolWindow, indexColumn]</code></pre>
+    _maxEnrolWindow = utilities.findMaxEnrolWindow(modelList)
+    _indexColumn = _df_test.iloc[_maxEnrolWindow:].index
+    _modelList = modelList</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.pairplot"><code class="name flex">
+<dt id="howiml.core_stateful.pairplot"><code class="name flex">
 <span>def <span class="ident">pairplot</span></span>(<span>df)</span>
 </code></dt>
 <dd>
@@ -2111,7 +2365,7 @@ e.g. as returned from the getTestTrainSplit method</p>
     return analysis.pairplot(df)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.pca"><code class="name flex">
+<dt id="howiml.core_stateful.pca"><code class="name flex">
 <span>def <span class="ident">pca</span></span>(<span>df, numberOfComponents, relevantColumns=None, columnDescriptions=None)</span>
 </code></dt>
 <dd>
@@ -2124,7 +2378,7 @@ e.g. as returned from the getTestTrainSplit method</p>
     return analysis.pca(df, numberOfComponents, relevantColumns, columnDescriptions)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.pcaDuoPlot"><code class="name flex">
+<dt id="howiml.core_stateful.pcaDuoPlot"><code class="name flex">
 <span>def <span class="ident">pcaDuoPlot</span></span>(<span>df_train, df_test_1, df_test_2, plotTitle=None)</span>
 </code></dt>
 <dd>
@@ -2137,7 +2391,7 @@ e.g. as returned from the getTestTrainSplit method</p>
     return analysis.pcaDuoPlot(df_train, df_test_1, df_test_2, plotTitle)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.pcaPlot"><code class="name flex">
+<dt id="howiml.core_stateful.pcaPlot"><code class="name flex">
 <span>def <span class="ident">pcaPlot</span></span>(<span>df, timestamps=None, plotTitle=None)</span>
 </code></dt>
 <dd>
@@ -2150,32 +2404,58 @@ e.g. as returned from the getTestTrainSplit method</p>
     return analysis.pcaPlot(df, timestamps, plotTitle)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.predictWithModels"><code class="name flex">
-<span>def <span class="ident">predictWithModels</span></span>(<span>modelList, X_train, y_train, X_test, y_test, targetColumns, indexColumn, columnDescriptions, columnUnits, traintime, plot=True, interpol=False, score=True)</span>
+<dt id="howiml.core_stateful.predictWithAutoencoderModels"><code class="name flex">
+<span>def <span class="ident">predictWithAutoencoderModels</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="function">Function</h2>
+<p>Used to make predictions in the case where all
+models in self.modelList are of type AutoencoderModel</p>
+<h2 id="params">Params</h2>
+<p>None</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def predictWithAutoencoderModels():
+    &#34;&#34;&#34;
+    FUNCTION:
+        Used to make predictions in the case where all
+        models in self.modelList are of type AutoencoderModel
+    
+    PARAMS:
+        None
+    
+    RETURNS:
+        None
+    &#34;&#34;&#34;
+    global _modelList, _df_test, _X_test
+
+    utilities.predictWithAutoencoderModels(
+        _modelList,
+        _df_test,
+        _X_test
+    )</code></pre>
+</details>
+</dd>
+<dt id="howiml.core_stateful.predictWithModels"><code class="name flex">
+<span>def <span class="ident">predictWithModels</span></span>(<span>plot=True, interpol=False, score=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
 <p>Used to make predictions using previously defined models</p>
 <h2 id="params">Params</h2>
-<p>modelList: list of MachineLearningModel/EnsembleModel objects
-The models used to make predictions
-X_train, y_train, X_test, y_test: Numpy arrays
-e.g. as returned by the getFeatureTarget method
-targetColumns: List of strings
-names of columns present in the dataset used as output(target) values
-Same as for the getFeatureTargetSplit method
-indexColumn: Pandas index column
-e.g. as returned by the initModels method
-columnDescriptions: Dict of (str, str)
-e.g. as returned bu the initDataframe method
-columnUnits: Dict of (str, str)
-e.g. as returned bu the initDataframe method
-traintime: list of list of strings
-defined by the user
-plot: boolean
+<p>plot: boolean
 Indicates if plots of the calculated predictions are desired
 interpol: boolean
-Indicates if interpolated functions for predictions should be plotted</p>
+Indicates if interpolated functions for predictions should be plotted
+score : boolean
+Indicates if scores should be printed</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>List[modelNames, metrics_train, metrics_test, columnsList, deviationsList]:</code></dt>
@@ -2187,45 +2467,18 @@ as well as the actual predictions wrapped in objects used for printing</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def predictWithModels(
-        modelList,
-        X_train,
-        y_train,
-        X_test,
-        y_test,
-        targetColumns,
-        indexColumn,
-        columnDescriptions,
-        columnUnits,
-        traintime,
-        plot=True,
-        interpol=False,
-        score=True,
-    ):
+<pre><code class="python">def predictWithModels(plot=True, interpol=False, score=True):
     &#34;&#34;&#34;
     FUNCTION:
         Used to make predictions using previously defined models
     
     PARAMS:
-        modelList: list of MachineLearningModel/EnsembleModel objects
-            The models used to make predictions
-        X_train, y_train, X_test, y_test: Numpy arrays
-            e.g. as returned by the getFeatureTarget method
-        targetColumns: List of strings
-            names of columns present in the dataset used as output(target) values
-            Same as for the getFeatureTargetSplit method
-        indexColumn: Pandas index column
-            e.g. as returned by the initModels method
-        columnDescriptions: Dict of (str, str)
-            e.g. as returned bu the initDataframe method
-        columnUnits: Dict of (str, str)
-            e.g. as returned bu the initDataframe method
-        traintime: list of list of strings
-            defined by the user
         plot: boolean
             Indicates if plots of the calculated predictions are desired
         interpol: boolean
             Indicates if interpolated functions for predictions should be plotted
+        score : boolean
+            Indicates if scores should be printed
     
     RETURNS:
         List[modelNames, metrics_train, metrics_test, columnsList, deviationsList]:
@@ -2233,14 +2486,15 @@ as well as the actual predictions wrapped in objects used for printing</dd>
             Lists containing the names and train/test scores of the provided models,
             as well as the actual predictions wrapped in objects used for printing
     &#34;&#34;&#34;
-    
+    global _modelList, _X_train, _y_train, _X_test, _y_test, _targetColumns, _indexColumn, _columnDescriptions, _columnUnits, _traintime
+
     modelNames, metrics_train, metrics_test, deviationsList, columnsList = utilities.predictWithModels(
-        modelList,
-        X_train,
-        y_train,
-        X_test,
-        y_test,
-        targetColumns 
+        _modelList,
+        _X_train,
+        _y_train,
+        _X_test,
+        _y_test,
+        _targetColumns 
     )
 
     if score:
@@ -2254,10 +2508,10 @@ as well as the actual predictions wrapped in objects used for printing</dd>
             plt,
             deviationsList,
             columnsList,
-            indexColumn,
-            columnDescriptions,
-            columnUnits,
-            traintime,
+            _indexColumn,
+            _columnDescriptions,
+            _columnUnits,
+            _traintime,
             interpol=interpol,
         )
     if score:
@@ -2271,7 +2525,115 @@ as well as the actual predictions wrapped in objects used for printing</dd>
     return [modelNames, metrics_train, metrics_test, columnsList, deviationsList]</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.printCorrelationMatrix"><code class="name flex">
+<dt id="howiml.core_stateful.predictWithModelsUsingDropout"><code class="name flex">
+<span>def <span class="ident">predictWithModelsUsingDropout</span></span>(<span>numberOfPredictions=20)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="function">Function</h2>
+<p>Used to make predictions with RNN models using dropout
+at predict time. Requires that the provided models
+have training=True, otherwise mean and std will be zero</p>
+<h2 id="params">Params</h2>
+<p>numberOfPredictions: int
+How many predictions to average in the result</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>List[predictions, means, standarddevs]</code></dt>
+<dd>[list(float), list(float), list(float)]
+Lists containing the predicted values and their means and stds</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def predictWithModelsUsingDropout(numberOfPredictions=20):
+    &#34;&#34;&#34;
+    FUNCTION:
+        Used to make predictions with RNN models using dropout
+        at predict time. Requires that the provided models
+        have training=True, otherwise mean and std will be zero
+    
+    PARAMS:
+        numberOfPredictions: int
+            How many predictions to average in the result
+    
+    RETURNS:
+        List[predictions, means, standarddevs]: [list(float), list(float), list(float)]
+            Lists containing the predicted values and their means and stds
+    &#34;&#34;&#34;
+    global _modelList, _X_test, _y_test
+
+    return utilities.predictMultipleWithModels(
+        _modelList,
+        _X_test,
+        _y_test,
+        numberOfPredictions,
+    )</code></pre>
+</details>
+</dd>
+<dt id="howiml.core_stateful.prepareDataframe"><code class="name flex">
+<span>def <span class="ident">prepareDataframe</span></span>(<span>df, traintime, testtime, targetColumns)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="function">Function</h2>
+<p>Combination of getTestTrainingSplit and getFeatureTargetSplit
+Used for even higher level programs where df_train and df_test are not needed</p>
+<h2 id="params">Params</h2>
+<p>df: Pandas dataframe
+dataframe generated from provided metadata
+traintime: List of list of string pairs
+start and end times indicating periods used for training
+testtime: List of string pair
+start and end time indicating period used for testing
+preferably the entire period of the dataset
+targetColumns: List of strings
+names of columns present in the dataset used as output(target) values</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>List[X_train, y_train, X_test, y_test]</code></dt>
+<dd>[Numpy array, Numpy array, Numpy array, Numpy array]
+Arrays of feature and target values for training and testing</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prepareDataframe(df, traintime, testtime, targetColumns):
+    &#34;&#34;&#34;
+    FUNCTION:
+        Combination of getTestTrainingSplit and getFeatureTargetSplit
+        Used for even higher level programs where df_train and df_test are not needed
+    
+    PARAMS:
+        df: Pandas dataframe
+            dataframe generated from provided metadata
+        traintime: List of list of string pairs
+            start and end times indicating periods used for training
+        testtime: List of string pair
+            start and end time indicating period used for testing
+            preferably the entire period of the dataset
+        targetColumns: List of strings
+            names of columns present in the dataset used as output(target) values
+    
+    RETURNS:
+        List[X_train, y_train, X_test, y_test]: [Numpy array, Numpy array, Numpy array, Numpy array]
+            Arrays of feature and target values for training and testing
+    &#34;&#34;&#34;
+
+    df_train, df_test = getTestTrainSplit(
+        df,
+        traintime,
+        testtime,
+    )
+
+    return getFeatureTargetSplit(
+        df_train,
+        df_test,
+        targetColumns,
+    )</code></pre>
+</details>
+</dd>
+<dt id="howiml.core_stateful.printCorrelationMatrix"><code class="name flex">
 <span>def <span class="ident">printCorrelationMatrix</span></span>(<span>covmat, df, columnNames=None)</span>
 </code></dt>
 <dd>
@@ -2284,7 +2646,7 @@ as well as the actual predictions wrapped in objects used for printing</dd>
     return prints.printCorrelationMatrix(covmat, df, columnNames)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.printExplainedVarianceRatio"><code class="name flex">
+<dt id="howiml.core_stateful.printExplainedVarianceRatio"><code class="name flex">
 <span>def <span class="ident">printExplainedVarianceRatio</span></span>(<span>pca)</span>
 </code></dt>
 <dd>
@@ -2297,7 +2659,59 @@ as well as the actual predictions wrapped in objects used for printing</dd>
     return prints.printExplainedVarianceRatio(pca)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.scatterplot"><code class="name flex">
+<dt id="howiml.core_stateful.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="function">Function</h2>
+<p>Resets the state of the module</p>
+<h2 id="params">Params</h2>
+<p>None</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reset():
+    &#34;&#34;&#34;
+    FUNCTION:
+        Resets the state of the module
+    
+    PARAMS:
+        None
+
+    RETURNS:
+        None
+    &#34;&#34;&#34;
+    global _filename, _names, _descriptions, _units, _relevantColumns, _columnDescriptions, _columnUnits, _columnNames, _df, _traintime, _testtime, _df_train, _df_test, _targetColumns, _modelList, _X_train, _y_train, _X_test, _y_test, _maxEnrolWindow, _indexColumn
+    _filename = None
+    _names = None
+    _descriptions = None
+    _units = None
+    _relevantColumns = None
+    _columnDescriptions = None
+    _columnUnits = None
+    _columnNames = None
+    _df = None
+    _traintime = None
+    _testtime = None
+    _df_train = None
+    _df_test = None
+    _targetColumns = None
+    _modelList = None
+    _X_train = None
+    _y_train = None
+    _X_test = None
+    _y_test = None
+    _maxEnrolWindow = None
+    _indexColumn = None</code></pre>
+</details>
+</dd>
+<dt id="howiml.core_stateful.scatterplot"><code class="name flex">
 <span>def <span class="ident">scatterplot</span></span>(<span>df)</span>
 </code></dt>
 <dd>
@@ -2310,7 +2724,7 @@ as well as the actual predictions wrapped in objects used for printing</dd>
     return analysis.scatterplot(df)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.setLSTMCallbacks"><code class="name flex">
+<dt id="howiml.core_stateful.setLSTMCallbacks"><code class="name flex">
 <span>def <span class="ident">setLSTMCallbacks</span></span>(<span>patience_es, patience_rlr)</span>
 </code></dt>
 <dd>
@@ -2350,7 +2764,7 @@ Number of iterations to wait before ReduceLearningRate is performed</p>
     _default_LSTM_args[&#39;callbacks&#39;] = modelFuncs.getBasicCallbacks(patience_es=patience_es, patience_rlr=patrience_rlr)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.setMLPCallbacks"><code class="name flex">
+<dt id="howiml.core_stateful.setMLPCallbacks"><code class="name flex">
 <span>def <span class="ident">setMLPCallbacks</span></span>(<span>patience_es, patience_rlr)</span>
 </code></dt>
 <dd>
@@ -2390,21 +2804,14 @@ Number of iterations to wait before ReduceLearningRate is performed</p>
     _default_MLP_args[&#39;callbacks&#39;] = modelFuncs.getBasicCallbacks(patience_es=patience_es, patience_rlr=patrience_rlr)</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.trainModels"><code class="name flex">
-<span>def <span class="ident">trainModels</span></span>(<span>modelList, filename, targetColumns, retrain=False)</span>
+<dt id="howiml.core_stateful.trainModels"><code class="name flex">
+<span>def <span class="ident">trainModels</span></span>(<span>retrain=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="function">Function</h2>
 <p>Used to train the models previously provided in the initModels method</p>
 <h2 id="params">Params</h2>
-<p>modelList: list of MachineLearningModel/EnsembleModel objects
-The models used to make predictions
-filename: str
-location of dataset file on disk in .csv format
-targetColumns: List of strings
-names of columns present in the dataset used as output(target) values
-Same as for the getFeatureTargetSplit method
-retrain: boolean
+<p>retrain: boolean
 Indicates if the program should prefer to load existing models where possible</p>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -2415,36 +2822,30 @@ Indicates if the program should prefer to load existing models where possible</p
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def trainModels(modelList, filename, targetColumns, retrain=False):
+<pre><code class="python">def trainModels(retrain=False):
     &#34;&#34;&#34;
     FUNCTION:
         Used to train the models previously provided in the initModels method
     
     PARAMS:
-        modelList: list of MachineLearningModel/EnsembleModel objects
-            The models used to make predictions
-        filename: str
-            location of dataset file on disk in .csv format
-        targetColumns: List of strings
-            names of columns present in the dataset used as output(target) values
-            Same as for the getFeatureTargetSplit method
         retrain: boolean
             Indicates if the program should prefer to load existing models where possible
     
     RETURNS:
         None
     &#34;&#34;&#34;
+    global _modelList, _filename, _targetColumns
 
     modelFuncs.trainModels(
-        modelList,
-        filename,
-        targetColumns,
+        _modelList,
+        _filename,
+        _targetColumns,
         retrain
     )</code></pre>
 </details>
 </dd>
-<dt id="src.core_stateless.valueDistribution"><code class="name flex">
-<span>def <span class="ident">valueDistribution</span></span>(<span>df, traintime, testtime)</span>
+<dt id="howiml.core_stateful.valueDistribution"><code class="name flex">
+<span>def <span class="ident">valueDistribution</span></span>(<span>df, traintime, testtime, columnDescriptions, columnUnits)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2452,8 +2853,8 @@ Indicates if the program should prefer to load existing models where possible</p
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def valueDistribution(df, traintime, testtime):
-    return analysis.valueDistribution(df, traintime, testtime)</code></pre>
+<pre><code class="python">def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
+    return analysis.valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits)</code></pre>
 </details>
 </dd>
 </dl>
@@ -2469,44 +2870,50 @@ Indicates if the program should prefer to load existing models where possible</p
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="src" href="index.html">src</a></code></li>
+<li><code><a title="howiml" href="index.html">howiml</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="src.core_stateless.AdaBoostRegressor" href="#src.core_stateless.AdaBoostRegressor">AdaBoostRegressor</a></code></li>
-<li><code><a title="src.core_stateless.BaggingRegressor" href="#src.core_stateless.BaggingRegressor">BaggingRegressor</a></code></li>
-<li><code><a title="src.core_stateless.DecisionTree" href="#src.core_stateless.DecisionTree">DecisionTree</a></code></li>
-<li><code><a title="src.core_stateless.ElasticNet" href="#src.core_stateless.ElasticNet">ElasticNet</a></code></li>
-<li><code><a title="src.core_stateless.Ensemble" href="#src.core_stateless.Ensemble">Ensemble</a></code></li>
-<li><code><a title="src.core_stateless.GRU" href="#src.core_stateless.GRU">GRU</a></code></li>
-<li><code><a title="src.core_stateless.LSTM" href="#src.core_stateless.LSTM">LSTM</a></code></li>
-<li><code><a title="src.core_stateless.Linear" href="#src.core_stateless.Linear">Linear</a></code></li>
-<li><code><a title="src.core_stateless.Linear_Regularized" href="#src.core_stateless.Linear_Regularized">Linear_Regularized</a></code></li>
-<li><code><a title="src.core_stateless.MLP" href="#src.core_stateless.MLP">MLP</a></code></li>
-<li><code><a title="src.core_stateless.RandomForest" href="#src.core_stateless.RandomForest">RandomForest</a></code></li>
-<li><code><a title="src.core_stateless.SupportVectorMachine" href="#src.core_stateless.SupportVectorMachine">SupportVectorMachine</a></code></li>
-<li><code><a title="src.core_stateless.correlationDifferencePlot" href="#src.core_stateless.correlationDifferencePlot">correlationDifferencePlot</a></code></li>
-<li><code><a title="src.core_stateless.correlationDuoPlot" href="#src.core_stateless.correlationDuoPlot">correlationDuoPlot</a></code></li>
-<li><code><a title="src.core_stateless.correlationMatrix" href="#src.core_stateless.correlationMatrix">correlationMatrix</a></code></li>
-<li><code><a title="src.core_stateless.correlationPlot" href="#src.core_stateless.correlationPlot">correlationPlot</a></code></li>
-<li><code><a title="src.core_stateless.getCallbacks" href="#src.core_stateless.getCallbacks">getCallbacks</a></code></li>
-<li><code><a title="src.core_stateless.getFeatureTargetSplit" href="#src.core_stateless.getFeatureTargetSplit">getFeatureTargetSplit</a></code></li>
-<li><code><a title="src.core_stateless.getTestTrainSplit" href="#src.core_stateless.getTestTrainSplit">getTestTrainSplit</a></code></li>
-<li><code><a title="src.core_stateless.initDataframe" href="#src.core_stateless.initDataframe">initDataframe</a></code></li>
-<li><code><a title="src.core_stateless.initModels" href="#src.core_stateless.initModels">initModels</a></code></li>
-<li><code><a title="src.core_stateless.pairplot" href="#src.core_stateless.pairplot">pairplot</a></code></li>
-<li><code><a title="src.core_stateless.pca" href="#src.core_stateless.pca">pca</a></code></li>
-<li><code><a title="src.core_stateless.pcaDuoPlot" href="#src.core_stateless.pcaDuoPlot">pcaDuoPlot</a></code></li>
-<li><code><a title="src.core_stateless.pcaPlot" href="#src.core_stateless.pcaPlot">pcaPlot</a></code></li>
-<li><code><a title="src.core_stateless.predictWithModels" href="#src.core_stateless.predictWithModels">predictWithModels</a></code></li>
-<li><code><a title="src.core_stateless.printCorrelationMatrix" href="#src.core_stateless.printCorrelationMatrix">printCorrelationMatrix</a></code></li>
-<li><code><a title="src.core_stateless.printExplainedVarianceRatio" href="#src.core_stateless.printExplainedVarianceRatio">printExplainedVarianceRatio</a></code></li>
-<li><code><a title="src.core_stateless.scatterplot" href="#src.core_stateless.scatterplot">scatterplot</a></code></li>
-<li><code><a title="src.core_stateless.setLSTMCallbacks" href="#src.core_stateless.setLSTMCallbacks">setLSTMCallbacks</a></code></li>
-<li><code><a title="src.core_stateless.setMLPCallbacks" href="#src.core_stateless.setMLPCallbacks">setMLPCallbacks</a></code></li>
-<li><code><a title="src.core_stateless.trainModels" href="#src.core_stateless.trainModels">trainModels</a></code></li>
-<li><code><a title="src.core_stateless.valueDistribution" href="#src.core_stateless.valueDistribution">valueDistribution</a></code></li>
+<li><code><a title="howiml.core_stateful.AdaBoostRegressor" href="#howiml.core_stateful.AdaBoostRegressor">AdaBoostRegressor</a></code></li>
+<li><code><a title="howiml.core_stateful.Autoencoder_Dropout" href="#howiml.core_stateful.Autoencoder_Dropout">Autoencoder_Dropout</a></code></li>
+<li><code><a title="howiml.core_stateful.Autoencoder_Regularized" href="#howiml.core_stateful.Autoencoder_Regularized">Autoencoder_Regularized</a></code></li>
+<li><code><a title="howiml.core_stateful.BaggingRegressor" href="#howiml.core_stateful.BaggingRegressor">BaggingRegressor</a></code></li>
+<li><code><a title="howiml.core_stateful.DecisionTree" href="#howiml.core_stateful.DecisionTree">DecisionTree</a></code></li>
+<li><code><a title="howiml.core_stateful.ElasticNet" href="#howiml.core_stateful.ElasticNet">ElasticNet</a></code></li>
+<li><code><a title="howiml.core_stateful.Ensemble" href="#howiml.core_stateful.Ensemble">Ensemble</a></code></li>
+<li><code><a title="howiml.core_stateful.GRU" href="#howiml.core_stateful.GRU">GRU</a></code></li>
+<li><code><a title="howiml.core_stateful.LSTM" href="#howiml.core_stateful.LSTM">LSTM</a></code></li>
+<li><code><a title="howiml.core_stateful.Linear" href="#howiml.core_stateful.Linear">Linear</a></code></li>
+<li><code><a title="howiml.core_stateful.Linear_Regularized" href="#howiml.core_stateful.Linear_Regularized">Linear_Regularized</a></code></li>
+<li><code><a title="howiml.core_stateful.MLP" href="#howiml.core_stateful.MLP">MLP</a></code></li>
+<li><code><a title="howiml.core_stateful.RandomForest" href="#howiml.core_stateful.RandomForest">RandomForest</a></code></li>
+<li><code><a title="howiml.core_stateful.SupportVectorMachine" href="#howiml.core_stateful.SupportVectorMachine">SupportVectorMachine</a></code></li>
+<li><code><a title="howiml.core_stateful.correlationDifferencePlot" href="#howiml.core_stateful.correlationDifferencePlot">correlationDifferencePlot</a></code></li>
+<li><code><a title="howiml.core_stateful.correlationDuoPlot" href="#howiml.core_stateful.correlationDuoPlot">correlationDuoPlot</a></code></li>
+<li><code><a title="howiml.core_stateful.correlationMatrix" href="#howiml.core_stateful.correlationMatrix">correlationMatrix</a></code></li>
+<li><code><a title="howiml.core_stateful.correlationPlot" href="#howiml.core_stateful.correlationPlot">correlationPlot</a></code></li>
+<li><code><a title="howiml.core_stateful.getCallbacks" href="#howiml.core_stateful.getCallbacks">getCallbacks</a></code></li>
+<li><code><a title="howiml.core_stateful.getFeatureTargetSplit" href="#howiml.core_stateful.getFeatureTargetSplit">getFeatureTargetSplit</a></code></li>
+<li><code><a title="howiml.core_stateful.getTestTrainSplit" href="#howiml.core_stateful.getTestTrainSplit">getTestTrainSplit</a></code></li>
+<li><code><a title="howiml.core_stateful.initDataframe" href="#howiml.core_stateful.initDataframe">initDataframe</a></code></li>
+<li><code><a title="howiml.core_stateful.initModels" href="#howiml.core_stateful.initModels">initModels</a></code></li>
+<li><code><a title="howiml.core_stateful.pairplot" href="#howiml.core_stateful.pairplot">pairplot</a></code></li>
+<li><code><a title="howiml.core_stateful.pca" href="#howiml.core_stateful.pca">pca</a></code></li>
+<li><code><a title="howiml.core_stateful.pcaDuoPlot" href="#howiml.core_stateful.pcaDuoPlot">pcaDuoPlot</a></code></li>
+<li><code><a title="howiml.core_stateful.pcaPlot" href="#howiml.core_stateful.pcaPlot">pcaPlot</a></code></li>
+<li><code><a title="howiml.core_stateful.predictWithAutoencoderModels" href="#howiml.core_stateful.predictWithAutoencoderModels">predictWithAutoencoderModels</a></code></li>
+<li><code><a title="howiml.core_stateful.predictWithModels" href="#howiml.core_stateful.predictWithModels">predictWithModels</a></code></li>
+<li><code><a title="howiml.core_stateful.predictWithModelsUsingDropout" href="#howiml.core_stateful.predictWithModelsUsingDropout">predictWithModelsUsingDropout</a></code></li>
+<li><code><a title="howiml.core_stateful.prepareDataframe" href="#howiml.core_stateful.prepareDataframe">prepareDataframe</a></code></li>
+<li><code><a title="howiml.core_stateful.printCorrelationMatrix" href="#howiml.core_stateful.printCorrelationMatrix">printCorrelationMatrix</a></code></li>
+<li><code><a title="howiml.core_stateful.printExplainedVarianceRatio" href="#howiml.core_stateful.printExplainedVarianceRatio">printExplainedVarianceRatio</a></code></li>
+<li><code><a title="howiml.core_stateful.reset" href="#howiml.core_stateful.reset">reset</a></code></li>
+<li><code><a title="howiml.core_stateful.scatterplot" href="#howiml.core_stateful.scatterplot">scatterplot</a></code></li>
+<li><code><a title="howiml.core_stateful.setLSTMCallbacks" href="#howiml.core_stateful.setLSTMCallbacks">setLSTMCallbacks</a></code></li>
+<li><code><a title="howiml.core_stateful.setMLPCallbacks" href="#howiml.core_stateful.setMLPCallbacks">setMLPCallbacks</a></code></li>
+<li><code><a title="howiml.core_stateful.trainModels" href="#howiml.core_stateful.trainModels">trainModels</a></code></li>
+<li><code><a title="howiml.core_stateful.valueDistribution" href="#howiml.core_stateful.valueDistribution">valueDistribution</a></code></li>
 </ul>
 </li>
 </ul>

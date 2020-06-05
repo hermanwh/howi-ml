@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>src.utils.analysis API documentation</title>
+<title>howiml.utils.analysis API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,20 +17,14 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>src.utils.analysis</code></h1>
+<h1 class="title">Module <code>howiml.utils.analysis</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import sys, os
-ROOT_PATH = os.path.abspath(&#34;.&#34;).split(&#34;src&#34;)[0]
-module_path = os.path.abspath(os.path.join(ROOT_PATH+&#34;/src/utils/&#34;))
-if module_path not in sys.path:
-    sys.path.append(module_path)
-
-import utilities
+<pre><code class="python">from howiml.utils import utilities
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -38,12 +32,8 @@ import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-np.random.seed(100)
-
 colors = list(utilities.getColorScheme().values())
-
 sns.set(context=&#39;paper&#39;, style=&#39;whitegrid&#39;, palette=sns.color_palette(colors))
-plt.style.use(ROOT_PATH + &#39;/src/utils/matplotlib_params.rc&#39;)
 
 def correlationMatrix(df):
     # Calculates correlation matrix of a pandas dataframe
@@ -372,7 +362,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="src.utils.analysis.correlationDifferencePlot"><code class="name flex">
+<dt id="howiml.utils.analysis.correlationDifferencePlot"><code class="name flex">
 <span>def <span class="ident">correlationDifferencePlot</span></span>(<span>df1, df2, title='Correlation difference plot')</span>
 </code></dt>
 <dd>
@@ -410,7 +400,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.analysis.correlationDuoPlot"><code class="name flex">
+<dt id="howiml.utils.analysis.correlationDuoPlot"><code class="name flex">
 <span>def <span class="ident">correlationDuoPlot</span></span>(<span>df1, df2, title1='Correlation plot', title2='Correlation plot')</span>
 </code></dt>
 <dd>
@@ -454,7 +444,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.analysis.correlationMatrix"><code class="name flex">
+<dt id="howiml.utils.analysis.correlationMatrix"><code class="name flex">
 <span>def <span class="ident">correlationMatrix</span></span>(<span>df)</span>
 </code></dt>
 <dd>
@@ -479,7 +469,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
     return covMat</code></pre>
 </details>
 </dd>
-<dt id="src.utils.analysis.correlationPlot"><code class="name flex">
+<dt id="howiml.utils.analysis.correlationPlot"><code class="name flex">
 <span>def <span class="ident">correlationPlot</span></span>(<span>df, title='Correlation plot')</span>
 </code></dt>
 <dd>
@@ -512,7 +502,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.analysis.pairplot"><code class="name flex">
+<dt id="howiml.utils.analysis.pairplot"><code class="name flex">
 <span>def <span class="ident">pairplot</span></span>(<span>df)</span>
 </code></dt>
 <dd>
@@ -534,7 +524,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.analysis.pca"><code class="name flex">
+<dt id="howiml.utils.analysis.pca"><code class="name flex">
 <span>def <span class="ident">pca</span></span>(<span>df, numberOfComponents, relevantColumns=None, columnDescriptions=None)</span>
 </code></dt>
 <dd>
@@ -564,7 +554,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
     return pca</code></pre>
 </details>
 </dd>
-<dt id="src.utils.analysis.pcaDuoPlot"><code class="name flex">
+<dt id="howiml.utils.analysis.pcaDuoPlot"><code class="name flex">
 <span>def <span class="ident">pcaDuoPlot</span></span>(<span>df_1_train, df_1_test, df_2_test, plotTitle=None)</span>
 </code></dt>
 <dd>
@@ -636,7 +626,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.analysis.pcaPlot"><code class="name flex">
+<dt id="howiml.utils.analysis.pcaPlot"><code class="name flex">
 <span>def <span class="ident">pcaPlot</span></span>(<span>df, timestamps=None, plotTitle=None)</span>
 </code></dt>
 <dd>
@@ -687,7 +677,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.analysis.scatterplot"><code class="name flex">
+<dt id="howiml.utils.analysis.scatterplot"><code class="name flex">
 <span>def <span class="ident">scatterplot</span></span>(<span>df)</span>
 </code></dt>
 <dd>
@@ -703,7 +693,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
     plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.analysis.valueDistribution"><code class="name flex">
+<dt id="howiml.utils.analysis.valueDistribution"><code class="name flex">
 <span>def <span class="ident">valueDistribution</span></span>(<span>df, traintime, testtime, columnDescriptions, columnUnits)</span>
 </code></dt>
 <dd>
@@ -754,7 +744,7 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
         plt.show()</code></pre>
 </details>
 </dd>
-<dt id="src.utils.analysis.valueDistributionSingle"><code class="name flex">
+<dt id="howiml.utils.analysis.valueDistributionSingle"><code class="name flex">
 <span>def <span class="ident">valueDistributionSingle</span></span>(<span>df, traintime, testtime)</span>
 </code></dt>
 <dd>
@@ -814,22 +804,22 @@ def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="src.utils" href="index.html">src.utils</a></code></li>
+<li><code><a title="howiml.utils" href="index.html">howiml.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="src.utils.analysis.correlationDifferencePlot" href="#src.utils.analysis.correlationDifferencePlot">correlationDifferencePlot</a></code></li>
-<li><code><a title="src.utils.analysis.correlationDuoPlot" href="#src.utils.analysis.correlationDuoPlot">correlationDuoPlot</a></code></li>
-<li><code><a title="src.utils.analysis.correlationMatrix" href="#src.utils.analysis.correlationMatrix">correlationMatrix</a></code></li>
-<li><code><a title="src.utils.analysis.correlationPlot" href="#src.utils.analysis.correlationPlot">correlationPlot</a></code></li>
-<li><code><a title="src.utils.analysis.pairplot" href="#src.utils.analysis.pairplot">pairplot</a></code></li>
-<li><code><a title="src.utils.analysis.pca" href="#src.utils.analysis.pca">pca</a></code></li>
-<li><code><a title="src.utils.analysis.pcaDuoPlot" href="#src.utils.analysis.pcaDuoPlot">pcaDuoPlot</a></code></li>
-<li><code><a title="src.utils.analysis.pcaPlot" href="#src.utils.analysis.pcaPlot">pcaPlot</a></code></li>
-<li><code><a title="src.utils.analysis.scatterplot" href="#src.utils.analysis.scatterplot">scatterplot</a></code></li>
-<li><code><a title="src.utils.analysis.valueDistribution" href="#src.utils.analysis.valueDistribution">valueDistribution</a></code></li>
-<li><code><a title="src.utils.analysis.valueDistributionSingle" href="#src.utils.analysis.valueDistributionSingle">valueDistributionSingle</a></code></li>
+<li><code><a title="howiml.utils.analysis.correlationDifferencePlot" href="#howiml.utils.analysis.correlationDifferencePlot">correlationDifferencePlot</a></code></li>
+<li><code><a title="howiml.utils.analysis.correlationDuoPlot" href="#howiml.utils.analysis.correlationDuoPlot">correlationDuoPlot</a></code></li>
+<li><code><a title="howiml.utils.analysis.correlationMatrix" href="#howiml.utils.analysis.correlationMatrix">correlationMatrix</a></code></li>
+<li><code><a title="howiml.utils.analysis.correlationPlot" href="#howiml.utils.analysis.correlationPlot">correlationPlot</a></code></li>
+<li><code><a title="howiml.utils.analysis.pairplot" href="#howiml.utils.analysis.pairplot">pairplot</a></code></li>
+<li><code><a title="howiml.utils.analysis.pca" href="#howiml.utils.analysis.pca">pca</a></code></li>
+<li><code><a title="howiml.utils.analysis.pcaDuoPlot" href="#howiml.utils.analysis.pcaDuoPlot">pcaDuoPlot</a></code></li>
+<li><code><a title="howiml.utils.analysis.pcaPlot" href="#howiml.utils.analysis.pcaPlot">pcaPlot</a></code></li>
+<li><code><a title="howiml.utils.analysis.scatterplot" href="#howiml.utils.analysis.scatterplot">scatterplot</a></code></li>
+<li><code><a title="howiml.utils.analysis.valueDistribution" href="#howiml.utils.analysis.valueDistribution">valueDistribution</a></code></li>
+<li><code><a title="howiml.utils.analysis.valueDistributionSingle" href="#howiml.utils.analysis.valueDistributionSingle">valueDistributionSingle</a></code></li>
 </ul>
 </li>
 </ul>
