@@ -1,9 +1,6 @@
-from prettytable import PrettyTable
-
 import numpy as np
-import utilities
-
-np.random.seed(100)
+from prettytable import PrettyTable
+from howiml.utils import utilities
 
 def printCorrelationMatrix(covMat, df, columnNames=None):
     if 'Date' in df.columns:

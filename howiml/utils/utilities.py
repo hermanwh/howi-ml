@@ -1,21 +1,10 @@
-import sys, os
-ROOT_PATH = os.path.abspath(".").split("src")[0]
-if ROOT_PATH not in sys.path:
-    sys.path.append(ROOT_PATH)
-module_path = os.path.abspath(os.path.join(ROOT_PATH+"/src/utils/"))
-if module_path not in sys.path:
-    sys.path.append(module_path)
-
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import metrics
-import plots
-import prints
-
-np.random.seed(100)
-tf.random.set_seed(100)
+from howiml.utils import metrics
+from howiml.utils import plots
+from howiml.utils import prints
 
 def initDataframe(filename, relevantColumns, labelNames):
     df = readDataFile(filename)

@@ -11,15 +11,37 @@ from howiml.utils import analysis
 import numpy as np
 import tensorflow as tf
 
+_filename = None
+_names = None
+_descriptions = None
+_units = None
+_relevantColumns = None
+_columnDescriptions = None
+_columnUnits = None
+_columnNames = None
+_df = None
+_traintime = None
+_testtime = None
+_df_train = None
+_df_test = None
+_targetColumns = None
+_modelList = None
+_X_train = None
+_y_train = None
+_X_test = None
+_y_test = None
+_maxEnrolWindow = None
+_indexColumn = None
+
 _default_MLP_args = {
     'activation': 'relu',
-    'loss': 'mean_squared_error',
+    'loss': 'mean_absolute_error',
     'optimizer': 'adam',
-    'metrics': ['mean_squared_error'],
-    'epochs': 2000,
-    'batchSize': 64,
+    'metrics': ['mean_absolute_error'],
+    'epochs': 500,
+    'batchSize': 128*2,
     'verbose': 1,
-    'callbacks': modelFuncs.getBasicCallbacks(patience_es=300, patience_rlr=150),
+    'callbacks': modelFuncs.getBasicCallbacks(patience_es=60, patience_rlr=40),
     'enrolWindow': 0,
     'validationSize': 0.2,
     'testSize': 0.2,
@@ -27,14 +49,14 @@ _default_MLP_args = {
 
 _default_LSTM_args = {
     'activation': 'tanh',
-    'loss': 'mean_squared_error',
+    'loss': 'mean_absolute_error',
     'optimizer': 'adam',
-    'metrics': ['mean_squared_error'],
+    'metrics': ['mean_absolute_error'],
     'epochs': 500,
-    'batchSize': 128,
+    'batchSize': 128*2,
     'verbose': 1,
-    'callbacks': modelFuncs.getBasicCallbacks(patience_es=75, patience_rlr=50),
-    'enrolWindow': 32,
+    'callbacks': modelFuncs.getBasicCallbacks(patience_es=60, patience_rlr=40),
+    'enrolWindow': 12,
     'validationSize': 0.2,
     'testSize': 0.2,
 }
@@ -53,10 +75,11 @@ def initDataframe(filename, columns, irrelevantColumns):
             columnNames excluded from the dataset
     
     RETURNS:
-        List[relevantColumns, columnDescriptions, columnUnits, columnNames, df]:
-            [Dict, Dict, Dict, Dict, Pandas dataframe]
+        df: Pandas dataframe
+            Dataframe generated from file and metadata
     """
-    
+    global _filename, _relevantColumns, _columnDescriptions, _columnUnits, _columnNames, _df
+
     columnNames = list(map(lambda el: el[0], columns))
     descriptions = list(map(lambda el: el[1], columns))
     units = list(map(lambda el: el[2], columns))
@@ -65,22 +88,28 @@ def initDataframe(filename, columns, irrelevantColumns):
     columnUnits = dict(zip(columnNames, units))
     columnDescriptions = dict(zip(columnNames, descriptions))
 
+    _filename = filename
+    _relevantColumns = relevantColumns
+    _columnDescriptions = columnDescriptions
+    _columnUnits = columnUnits
+    _columnNames = columnNames
+    
     df = utilities.initDataframe(
         filename,
         relevantColumns,
         columnDescriptions,
     )
 
-    return [relevantColumns, columnDescriptions, columnUnits, columnNames, df]
+    _df = df
 
-def getTestTrainSplit(df, traintime, testtime):
+    return df
+
+def getTestTrainSplit(traintime, testtime):
     """
     FUNCTION:
         Used to split training and testing rows into separate data frames
     
     PARAMS:
-        df: Pandas dataframe
-            e.g. as returned from the initDataframe method
         traintime: List of list of string pairs
             start and end times indicating periods used for training
         testtime: List of string pair
@@ -91,25 +120,66 @@ def getTestTrainSplit(df, traintime, testtime):
         List[df_train, df_test]: [Pandas dataframe, Pandas dataframe]
             Dataframes of training and testing dataset rows
     """
+    global _traintime, _testtime, _df, _df_train, _df_test
+
+    _traintime = traintime
+    _testtime = testtime
 
     df_train, df_test = utilities.getTestTrainSplit(
-        df,
+        _df,
         traintime,
         testtime,
     )
 
+    _df_train = df_train
+    _df_test = df_test
+
     return [df_train, df_test]
 
-def getFeatureTargetSplit(df_train, df_test, targetColumns):
+def getFeatureTargetSplit(targetColumns):
     """
     FUNCTION:
         Used to split feature and target columns into separate arrays
     
     PARAMS:
-        df_train: Pandas dataframe of training data
-            e.g. as returned from the getTestTrainSplit method
-        df_est: Pandas dataframe of testing data
-            e.g. as returned from the getTestTrainSplit method
+        targetColumns: List of strings
+            names of columns present in the dataset used as output(target) values
+    
+    RETURNS:
+        List[X_train, y_train, X_test, y_test]: [Numpy array, Numpy array, Numpy array, Numpy array]
+            Arrays of feature and target values for training and testing
+    """
+    global _targetColumns, _X_train, _y_train, _X_test, _y_test
+
+    _targetColumns = targetColumns
+
+    X_train, y_train, X_test, y_test =  utilities.getFeatureTargetSplit(
+        _df_train,
+        _df_test,
+        targetColumns,
+    )
+
+    _X_train = X_train
+    _y_train = y_train
+    _X_test = X_test
+    _y_test = y_test
+
+    return [X_train, y_train, X_test, y_test]
+
+def prepareDataframe(df, traintime, testtime, targetColumns):
+    """
+    FUNCTION:
+        Combination of getTestTrainingSplit and getFeatureTargetSplit
+        Used for even higher level programs where df_train and df_test are not needed
+    
+    PARAMS:
+        df: Pandas dataframe
+            dataframe generated from provided metadata
+        traintime: List of list of string pairs
+            start and end times indicating periods used for training
+        testtime: List of string pair
+            start and end time indicating period used for testing
+            preferably the entire period of the dataset
         targetColumns: List of strings
             names of columns present in the dataset used as output(target) values
     
@@ -118,15 +188,19 @@ def getFeatureTargetSplit(df_train, df_test, targetColumns):
             Arrays of feature and target values for training and testing
     """
 
-    X_train, y_train, X_test, y_test =  utilities.getFeatureTargetSplit(
+    df_train, df_test = getTestTrainSplit(
+        df,
+        traintime,
+        testtime,
+    )
+
+    return getFeatureTargetSplit(
         df_train,
         df_test,
         targetColumns,
     )
 
-    return [X_train, y_train, X_test, y_test]
-
-def initModels(modelList, df_test):
+def initModels(modelList):
     """
     FUNCTION:
         Used to initiate the provided models by calculating required model parameters
@@ -134,84 +208,73 @@ def initModels(modelList, df_test):
     PARAMS:
         modelList: list of MachineLearningModel/EnsembleModel objects
             The models used to make predictions
-        df_test: Pandas dataframe
-            e.g. as returned from the getTestTrainSplit method
     
     RETURNS:
         None
     """
+    global _maxEnrolWindow, _indexColumn, _modelList, _df_test
 
-    maxEnrolWindow = utilities.findMaxEnrolWindow(modelList)
-    indexColumn = df_test.iloc[maxEnrolWindow:].index
+    _maxEnrolWindow = utilities.findMaxEnrolWindow(modelList)
+    _indexColumn = _df_test.iloc[_maxEnrolWindow:].index
+    _modelList = modelList
 
-    return [maxEnrolWindow, indexColumn]
-
-def trainModels(modelList, filename, targetColumns, retrain=False):
+def trainModels(retrain=False):
     """
     FUNCTION:
         Used to train the models previously provided in the initModels method
     
     PARAMS:
-        modelList: list of MachineLearningModel/EnsembleModel objects
-            The models used to make predictions
-        filename: str
-            location of dataset file on disk in .csv format
-        targetColumns: List of strings
-            names of columns present in the dataset used as output(target) values
-            Same as for the getFeatureTargetSplit method
         retrain: boolean
             Indicates if the program should prefer to load existing models where possible
     
     RETURNS:
         None
     """
+    global _modelList, _filename, _targetColumns
 
     modelFuncs.trainModels(
-        modelList,
-        filename,
-        targetColumns,
+        _modelList,
+        _filename,
+        _targetColumns,
         retrain
     )
 
-def predictWithModels(
-        modelList,
-        X_train,
-        y_train,
-        X_test,
-        y_test,
-        targetColumns,
-        indexColumn,
-        columnDescriptions,
-        columnUnits,
-        traintime,
-        plot=True,
-        interpol=False,
-        score=True,
-    ):
+def predictWithModelsUsingDropout(numberOfPredictions=20):
+    """
+    FUNCTION:
+        Used to make predictions with RNN models using dropout
+        at predict time. Requires that the provided models
+        have training=True, otherwise mean and std will be zero
+    
+    PARAMS:
+        numberOfPredictions: int
+            How many predictions to average in the result
+    
+    RETURNS:
+        List[predictions, means, standarddevs]: [list(float), list(float), list(float)]
+            Lists containing the predicted values and their means and stds
+    """
+    global _modelList, _X_test, _y_test
+
+    return utilities.predictMultipleWithModels(
+        _modelList,
+        _X_test,
+        _y_test,
+        numberOfPredictions,
+    )
+
+def predictWithModels(plot=True, interpol=False, score=True):
     """
     FUNCTION:
         Used to make predictions using previously defined models
     
     PARAMS:
-        modelList: list of MachineLearningModel/EnsembleModel objects
-            The models used to make predictions
-        X_train, y_train, X_test, y_test: Numpy arrays
-            e.g. as returned by the getFeatureTarget method
-        targetColumns: List of strings
-            names of columns present in the dataset used as output(target) values
-            Same as for the getFeatureTargetSplit method
-        indexColumn: Pandas index column
-            e.g. as returned by the initModels method
-        columnDescriptions: Dict of (str, str)
-            e.g. as returned bu the initDataframe method
-        columnUnits: Dict of (str, str)
-            e.g. as returned bu the initDataframe method
-        traintime: list of list of strings
-            defined by the user
         plot: boolean
             Indicates if plots of the calculated predictions are desired
         interpol: boolean
             Indicates if interpolated functions for predictions should be plotted
+        score : boolean
+            Indicates if scores should be printed
     
     RETURNS:
         List[modelNames, metrics_train, metrics_test, columnsList, deviationsList]:
@@ -219,14 +282,15 @@ def predictWithModels(
             Lists containing the names and train/test scores of the provided models,
             as well as the actual predictions wrapped in objects used for printing
     """
-    
+    global _modelList, _X_train, _y_train, _X_test, _y_test, _targetColumns, _indexColumn, _columnDescriptions, _columnUnits, _traintime
+
     modelNames, metrics_train, metrics_test, deviationsList, columnsList = utilities.predictWithModels(
-        modelList,
-        X_train,
-        y_train,
-        X_test,
-        y_test,
-        targetColumns 
+        _modelList,
+        _X_train,
+        _y_train,
+        _X_test,
+        _y_test,
+        _targetColumns 
     )
 
     if score:
@@ -240,10 +304,10 @@ def predictWithModels(
             plt,
             deviationsList,
             columnsList,
-            indexColumn,
-            columnDescriptions,
-            columnUnits,
-            traintime,
+            _indexColumn,
+            _columnDescriptions,
+            _columnUnits,
+            _traintime,
             interpol=interpol,
         )
     if score:
@@ -256,10 +320,28 @@ def predictWithModels(
 
     return [modelNames, metrics_train, metrics_test, columnsList, deviationsList]
 
+def predictWithAutoencoderModels():
+    """
+    FUNCTION:
+        Used to make predictions in the case where all
+        models in self.modelList are of type AutoencoderModel
+    
+    PARAMS:
+        None
+    
+    RETURNS:
+        None
+    """
+    global _modelList, _df_test, _X_test
+
+    utilities.predictWithAutoencoderModels(
+        _modelList,
+        _df_test,
+        _X_test
+    )
+
 def MLP(
         name,
-        X_train,
-        y_train,
         layers=[128],
         dropout=None,
         l1_rate=0.0,
@@ -282,10 +364,6 @@ def MLP(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         layers: list of integers
             List of neuron size for each layer
         dropout: float
@@ -299,7 +377,7 @@ def MLP(
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
-    global _default_MLP_args
+    global _X_train, _y_train, _default_MLP_args
 
     mlpLayers = []
     for layerSize in layers:
@@ -308,8 +386,8 @@ def MLP(
     model = models.kerasMLP(
         params = {
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
             'args': {
                 'activation': activation,
                 'loss': loss,
@@ -334,8 +412,6 @@ def MLP(
 
 def LSTM(
     name,
-    X_train,
-    y_train,
     layers=[128],
     dropout=0.0,
     recurrentDropout=0.0,
@@ -362,10 +438,6 @@ def LSTM(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         layers: list of integers
             List of neuron size for each layer
         dropout: float
@@ -383,13 +455,13 @@ def LSTM(
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
-    global _default_LSTM_args
+    global _X_train, _y_train, _default_LSTM_args
 
     model = models.kerasLSTM(
         params = {
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
             'args': {
                 'activation': activation,
                 'loss': loss,
@@ -415,8 +487,6 @@ def LSTM(
 
 def GRU(
     name,
-    X_train,
-    y_train,
     layers=[128],
     dropout=0.0,
     recurrentDropout=0.0,
@@ -443,10 +513,6 @@ def GRU(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         layers: list of integers
             List of neuron size for each layer
         dropout: float
@@ -464,13 +530,13 @@ def GRU(
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
-    global _default_LSTM_args
+    global _X_train, _y_train, _default_LSTM_args
 
     model = models.kerasGRU(
         params = {
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
             'args': {
                 'activation': activation,
                 'loss': loss,
@@ -496,8 +562,6 @@ def GRU(
 
 def Linear(
     name,
-    X_train,
-    y_train,
     ):
     """
     FUNCTION:
@@ -506,21 +570,18 @@ def Linear(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
+    global _X_train, _y_train
 
     model = models.sklearnLinear(
         params={
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
         },
     )
 
@@ -528,8 +589,8 @@ def Linear(
 
 def Linear_Regularized(
     name,
-    X_train,
-    y_train,
+    alphas=(0.1, 1.0, 10.0),
+    folds=10,
     ):
     """
     FUNCTION:
@@ -539,30 +600,31 @@ def Linear_Regularized(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
+        alphas: tuple of floats
+            Set of regluarization strenght parameters to try
+        folds: int
+            Number of cross validation folds
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
+    global _X_train, _y_train
 
     model = models.sklearnRidgeCV(
         params={
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
         },
+        alphas = alphas,
+        folds = folds,
     )
 
     return model
 
 def ElasticNet(
     name,
-    X_train,
-    y_train,
     alphas=(0.1, 1.0, 10.0),
     l1_ratio=0.5,
     ):
@@ -573,10 +635,6 @@ def ElasticNet(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         alphas: tuple of floats
             Set of regluarization strenght parameters to try
         l1_ratio: float
@@ -586,12 +644,13 @@ def ElasticNet(
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
+    global _X_train, _y_train
 
     model = models.sklearnElasticNetCV(
         params={
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
         },
         alphas = alphas,
         l1_ratio = l1_ratio,
@@ -601,8 +660,6 @@ def ElasticNet(
 
 def DecisionTree(
     name,
-    X_train,
-    y_train,
     ):
     """
     FUNCTION:
@@ -611,21 +668,18 @@ def DecisionTree(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
+    global _X_train, _y_train
 
     model = models.sklearnDecisionTree(
         params={
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
         },
     )
 
@@ -633,8 +687,6 @@ def DecisionTree(
 
 def RandomForest(
     name,
-    X_train,
-    y_train,
     ):
     """
     FUNCTION:
@@ -643,21 +695,18 @@ def RandomForest(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
+    global _X_train, _y_train
 
     model = models.sklearnRandomForest(
         params={
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
         },
     )
 
@@ -665,8 +714,6 @@ def RandomForest(
 
 def BaggingRegressor(
     name,
-    X_train,
-    y_train,
     ):
     """
     FUNCTION:
@@ -676,21 +723,18 @@ def BaggingRegressor(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
+    global _X_train, _y_train
 
     model = models.sklearnBagging(
         params={
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
         },
     )
 
@@ -698,8 +742,6 @@ def BaggingRegressor(
 
 def AdaBoostRegressor(
     name,
-    X_train,
-    y_train,
     ):
     """
     FUNCTION:
@@ -709,21 +751,18 @@ def AdaBoostRegressor(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
+    global _X_train, _y_train
 
     model = models.sklearnAdaBoost(
         params={
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
         },
     )
 
@@ -731,8 +770,6 @@ def AdaBoostRegressor(
 
 def SupportVectorMachine(
     name,
-    X_train,
-    y_train,
     ):
     """
     FUNCTION:
@@ -741,32 +778,24 @@ def SupportVectorMachine(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
     
     RETURNS:
         model: MachineLearningModel
             Object with typical machine learning methods like train, predict etc.
     """
+    global _X_train, _y_train
 
     model = models.sklearnSVM(
         params={
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
         },
     )
 
     return model
 
-def Ensemble(
-    name,
-    X_train,
-    y_train,
-    modelList,
-    ):
+def Ensemble(name, modelList):
     """
     FUNCTION:
         Used to create an Ensemble model, combining the prediction
@@ -775,10 +804,6 @@ def Ensemble(
     PARAMS:
         name: str
             A name/alias given to the model by the user
-        X_train: Numpy array
-            Values for the training features
-        y_train: Numpy array
-            Values for the training targets
         modelList: list of MachineLearningModel objects
             A list of machine learning models used to construct the Ensemble model
     
@@ -786,17 +811,174 @@ def Ensemble(
         model: EnsembleModel
             Ensemble model object which behaves the same as any other MachineLearningModel
     """
+    global _X_train, _y_train
 
     model = models.ensembleModel(
         params={
             'name': name,
-            'X_train': X_train,
-            'y_train': y_train,
+            'X_train': _X_train,
+            'y_train': _y_train,
         },
         models=modelList,
     )
 
     return model
+
+def Autoencoder_Regularized(
+        name,
+        l1_rate=10e-4,
+        encodingDim=3,
+        activation=_default_MLP_args['activation'],
+        loss=_default_MLP_args['loss'],
+        optimizer=_default_MLP_args['optimizer'],
+        metrics=_default_MLP_args['metrics'],
+        epochs=_default_MLP_args['epochs'],
+        batchSize=_default_MLP_args['batchSize'],
+        verbose=_default_MLP_args['verbose'],
+        validationSize=_default_MLP_args['validationSize'],
+        testSize=_default_MLP_args['testSize'],
+        callbacks=_default_MLP_args['callbacks'],
+    ):
+    """
+    FUNCTION:
+        Used to create an Autoencoder model using multilayer perceptron
+        and reguarlization by Lasso regluarization
+        NB: Autoencoder models SHOULD NOT and CAN NOT
+            be used together with other models, or
+            as submodels to Ensemble models
+    
+    PARAMS:
+        name: str
+            A name/alias given to the model by the user
+        l1_rate: float
+            Level of L1 regularization
+        encodingDim: int
+            Size of autoencoder middle layer
+    
+    RETURNS:
+        model: AutoencoderModel
+            Object with typical machine learning methods like train, predict etc.
+    """
+    global _X_train, _default_MLP_args
+
+    model = models.autoencoder_Regularized(
+        params = {
+            'name': name,
+            'X_train': _X_train,
+            'args': {
+                'activation': activation,
+                'loss': loss,
+                'optimizer': optimizer,
+                'metrics': metrics,
+                'epochs': epochs,
+                'batchSize': batchSize,
+                'verbose': verbose,
+                'callbacks': callbacks,
+                'enrolWindow': 0,
+                'validationSize': validationSize,
+                'testSize': testSize,
+            },
+        },
+        l1_rate=l1_rate,
+        encodingDim=encodingDim,
+    )
+    
+    return model
+
+def Autoencoder_Dropout(
+        name,
+        dropout=0.0,
+        encodingDim=3,
+        activation=_default_MLP_args['activation'],
+        loss=_default_MLP_args['loss'],
+        optimizer=_default_MLP_args['optimizer'],
+        metrics=_default_MLP_args['metrics'],
+        epochs=_default_MLP_args['epochs'],
+        batchSize=_default_MLP_args['batchSize'],
+        verbose=_default_MLP_args['verbose'],
+        validationSize=_default_MLP_args['validationSize'],
+        testSize=_default_MLP_args['testSize'],
+        callbacks=_default_MLP_args['callbacks'],
+    ):
+    """
+    FUNCTION:
+        Used to create an Autoencoder model using multilayer perceptron
+        and reguarlization by Lasso regluarization
+        NB: Autoencoder models SHOULD NOT and CAN NOT
+            be used together with other models, or
+            as submodels to Ensemble models
+    
+    PARAMS:
+        name: str
+            A name/alias given to the model by the user
+        dropout: float
+            Level of dropout
+        encodingDim: int
+            Size of autoencoder middle layer
+    
+    RETURNS:
+        model: AutoencoderModel
+            Object with typical machine learning methods like train, predict etc.
+    """
+    global _X_train, _default_MLP_args
+
+    model = models.autoencoder_Dropout(
+        params = {
+            'name': name,
+            'X_train': _X_train,
+            'args': {
+                'activation': activation,
+                'loss': loss,
+                'optimizer': optimizer,
+                'metrics': metrics,
+                'epochs': epochs,
+                'batchSize': batchSize,
+                'verbose': verbose,
+                'callbacks': callbacks,
+                'enrolWindow': 0,
+                'validationSize': validationSize,
+                'testSize': testSize,
+            },
+        },
+        dropout=dropout,
+        encodingDim=encodingDim,
+    )
+    
+    return model
+
+def reset():
+    """
+    FUNCTION:
+        Resets the state of the module
+    
+    PARAMS:
+        None
+
+    RETURNS:
+        None
+    """
+    global _filename, _names, _descriptions, _units, _relevantColumns, _columnDescriptions, _columnUnits, _columnNames, _df, _traintime, _testtime, _df_train, _df_test, _targetColumns, _modelList, _X_train, _y_train, _X_test, _y_test, _maxEnrolWindow, _indexColumn
+    _filename = None
+    _names = None
+    _descriptions = None
+    _units = None
+    _relevantColumns = None
+    _columnDescriptions = None
+    _columnUnits = None
+    _columnNames = None
+    _df = None
+    _traintime = None
+    _testtime = None
+    _df_train = None
+    _df_test = None
+    _targetColumns = None
+    _modelList = None
+    _X_train = None
+    _y_train = None
+    _X_test = None
+    _y_test = None
+    _maxEnrolWindow = None
+    _indexColumn = None
 
 def getCallbacks(patience_es, patience_rlr):
     """
@@ -877,8 +1059,8 @@ def correlationDuoPlot(df1, df2, title1="Correlation plot 1", title2="Correlatio
 def correlationDifferencePlot(df1, df2, title="Correlation difference plot"):
     return analysis.correlationDifferencePlot(df1, df2, title)
 
-def valueDistribution(df, traintime, testtime):
-    return analysis.valueDistribution(df, traintime, testtime)
+def valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits):
+    return analysis.valueDistribution(df, traintime, testtime, columnDescriptions, columnUnits)
 
 def printCorrelationMatrix(covmat, df, columnNames=None):
     return prints.printCorrelationMatrix(covmat, df, columnNames)

@@ -1,10 +1,7 @@
 import sys, os
-ROOT_PATH = os.path.abspath(".").split("src")[0]
+ROOT_PATH = os.path.abspath(".")
 if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
-module_path = os.path.abspath(os.path.join(ROOT_PATH+"/src/utils/"))
-if module_path not in sys.path:
-    sys.path.append(module_path)
 
 import pathlib
 #print(pathlib.Path(__file__).parent.absolute())
@@ -26,16 +23,12 @@ from keras.models import load_model
 from keras.callbacks.callbacks import EarlyStopping, ReduceLROnPlateau
 from keras.utils import plot_model
 
-import plots
-import prints
+from howiml.utils import plots
+from howiml.utils import prints
 import pickle
 import numpy as np
-
 import math
 import random
-
-random.seed(100)
-np.random.seed(100)
 
 def printModelSummary(model):
     # Prints the model summary of a machine learning model
@@ -164,10 +157,10 @@ def loadModel(modelname, filename, targetColumns, ensembleName=None):
     modName = "_".join(modelname.split(' '))
     
     if ensembleName is None:
-        directory = ROOT_PATH + '/src/ml/trained_models/' + subdir + '/' + datafile + '/' + modName + '_' + joinedColumns
+        directory = ROOT_PATH + '/howiml/ml/trained_models/' + subdir + '/' + datafile + '/' + modName + '_' + joinedColumns
     else:    
         ensName = "_".join(ensembleName.split(' '))
-        directory = ROOT_PATH + '/src/ml/trained_models/' + subdir + '/' + datafile + '/' + ensName + '_' + joinedColumns + '/' + modName
+        directory = ROOT_PATH + '/howiml/ml/trained_models/' + subdir + '/' + datafile + '/' + ensName + '_' + joinedColumns + '/' + modName
     
     if os.path.isfile((directory + ".h5")) and os.path.isfile((directory + ".h5")):
         model = load_model(directory + ".h5")
@@ -186,7 +179,7 @@ def saveModels(modelList, filename, targetColumns):
     
     for model in modelList:
         modName = "_".join(model.name.split(' '))
-        directory = ROOT_PATH + '/src/ml/trained_models/' + subdir + '/' + datafile + '/'
+        directory = ROOT_PATH + '/howiml/ml/trained_models/' + subdir + '/' + datafile + '/'
         if not os.path.exists(directory):
             os.makedirs(directory)
         modelPath = directory

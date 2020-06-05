@@ -1,10 +1,7 @@
 import sys, os
-ROOT_PATH = os.path.abspath(".").split("src")[0]
+ROOT_PATH = os.path.abspath(".")
 if ROOT_PATH not in sys.path:
     sys.path.append(ROOT_PATH)
-module_path = os.path.abspath(os.path.join(ROOT_PATH+"/src/utils/"))
-if module_path not in sys.path:
-    sys.path.append(module_path)
 
 from sklearn.linear_model import (ElasticNet, ElasticNetCV, LinearRegression, Lasso, LassoCV, Ridge, RidgeCV)
 from sklearn.neural_network import MLPRegressor, BernoulliRBM
@@ -26,12 +23,9 @@ from copy import deepcopy
 import pickle
 import numpy as np
 import tensorflow as tf
-from modelFuncs import getRNNSplit
+from howiml.utils.modelFuncs import getRNNSplit
 
-np.random.seed(100)
-tf.random.set_seed(100)
-
-CURRENT_MODEL_WEIGHTS_FILEPATH = ROOT_PATH + '/src/ml/trained_models/training_weights/'
+CURRENT_MODEL_WEIGHTS_FILEPATH = ROOT_PATH + '/howiml/ml/trained_models/training_weights/'
 
 class Args():
     def __init__(self, args):

@@ -1,10 +1,4 @@
-import sys, os
-ROOT_PATH = os.path.abspath(".").split("src")[0]
-module_path = os.path.abspath(os.path.join(ROOT_PATH+"/src/utils/"))
-if module_path not in sys.path:
-    sys.path.append(module_path)
-
-import utilities
+from howiml.utils import utilities
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -12,12 +6,8 @@ import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-np.random.seed(100)
-
 colors = list(utilities.getColorScheme().values())
-
 sns.set(context='paper', style='whitegrid', palette=sns.color_palette(colors))
-plt.style.use(ROOT_PATH + '/src/utils/matplotlib_params.rc')
 
 def correlationMatrix(df):
     # Calculates correlation matrix of a pandas dataframe

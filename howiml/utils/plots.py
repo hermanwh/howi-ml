@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as pltt
 
-np.random.seed(100)
-
 def getPlotColors():
     colors = [
         '#000080',
