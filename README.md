@@ -1,7 +1,7 @@
 # howiml
 HoWi ML is a top-level machine learning package for prototyping and comparison between different scikit-learn, MLP, LSTM and GRU model architectures. It originates from a master thesis focusing on the use of Machine Learning regression models for the oil and gas domain, found here: [https://github.com/hermanwh/master-thesis](https://github.com/hermanwh/master-thesis)
 
-The package is published on PyPi. To install, do the following:
+The package is published on PyPi ([https://pypi.org/project/howiml/](https://pypi.org/project/howiml/)). To install, do the following:
 - Install Python 3.6
 - Create a new virtual environment
 - pip install howiml
