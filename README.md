@@ -1,5 +1,5 @@
-# howi-ml
-HoWi ML is a top-level machine learning package for prototyping and comparison between different scikit-learn, MLP, LSTM and GRU model architectures. It originates from a master thesis focusing on the use of Machine Learning regression models for the oil and gas domain.
+# howiml
+HoWi ML is a top-level machine learning package for prototyping and comparison between different scikit-learn, MLP, LSTM and GRU model architectures. It originates from a master thesis focusing on the use of Machine Learning regression models for the oil and gas domain, found here: [https://github.com/hermanwh/master-thesis](https://github.com/hermanwh/master-thesis)
 
 The package is published on PyPi. To install, do the following:
 - Install Python 3.6
@@ -9,7 +9,7 @@ The package is published on PyPi. To install, do the following:
 Additional packages like Tensorflow, Keras etc. are automatically installed.
 
 # Usage
-Code documentation is available in the "doc" folder
+Code documentation is available in the "docs" folder
 
 Two examples using the stateless (default) and stateful module are seen in the top-level repository ("example_stateful.ipynb" and "example_stateless.ipynb", respectively).
 
