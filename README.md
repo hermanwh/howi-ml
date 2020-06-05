@@ -3,10 +3,11 @@ HoWi ML is a top-level machine learning package for prototyping and comparison b
 
 The package is published on PyPi ([https://pypi.org/project/howiml/](https://pypi.org/project/howiml/)). To install, do the following:
 - Install Python 3.6
+- Create a new project folder
 - Create a new virtual environment
 - pip install howiml
 
-Additional packages like Tensorflow, Keras etc. are automatically installed.
+Additional packages like Tensorflow, Keras etc. are automatically installed. This takes some time (approx. 5min), so be patient.
 
 # Usage
 Code documentation is available in the "docs" folder
