@@ -30,7 +30,7 @@ setuptools.setup(
         'prettytable>=0.7.2,<0.7.3',
         'scikit-learn>=0.22.2,<0.22.3',
         'seaborn>=0.10.0,<0.10.1',
-        'tensorflow>=2.1.0,<2.1.1',
+        'tensorflow>=2.1.0,<2.1.3',
         'notebook>=6.0.3,<6.0.4',
     ],
 )
