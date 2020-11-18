@@ -31,6 +31,6 @@ setuptools.setup(
         'scikit-learn>=0.22.2,<0.22.3',
         'seaborn>=0.10.0,<0.10.1',
         'tensorflow>=2.1.0,<2.1.1',
-        'notebook>=6.0.3,<6.0.4',
+        'notebook>=6.0.3,<6.1.6',
     ],
 )
